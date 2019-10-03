@@ -1,25 +1,35 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, {lazy,Suspense} from 'react';
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import { ThemeProvider } from '@material-ui/styles';
+import defaultTheme from 'themes/default'
+import { Provider } from "react-redux";
+import store from 'reduxs/store';
+import MainComponentLoader from './components/MainComponentLoader';
 
-function App() {
+const LoginPage =  lazy(() => import("pages/login/LoginPage"))
+const HomePage =  lazy(() => import("pages/home/HomePage"))
+const NotFoundPage =  lazy(() => import("pages/error/NotFoundPage"))
+const UjianFormPage =  lazy(() => import("pages/ujian/UjianFormPage"))
+
+
+const App = () => {
+  
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <ThemeProvider theme={defaultTheme}>
+    <Provider store={store}>      
+      <Router>  
+        <Suspense fallback={<span>Loading the page...</span>}>               
+          <Switch>      
+            <Route exact path="/" component={HomePage} />
+            <Route path="/home" component={HomePage} />
+            <Route path="/login" component={LoginPage} />
+            <Route path="/exam" component={UjianFormPage} />
+            <Route component={NotFoundPage} />
+          </Switch> 
+        </Suspense>                     
+      </Router>      
+    </Provider>
+    </ThemeProvider>
   );
 }
 

@@ -1,0 +1,23 @@
+
+const [dataJurusan, setDataJurusan] = useState([]) 
+    const [jurusan, setJurusan] = useState(null)
+    const jurusanChange = (e)=>{
+        setJurusan(e)  
+        setSubject(null)        
+    }
+    const getDataJurusan =async()=>{
+        const params= {group:'jurusan'}
+        const response = await doGet('param',params)
+        setDataJurusan(response.data.map(j=>({label:j.value, value:j.num_code})));
+    }
+<Conditional condition={jenjang!==null && jenjang.value==='SMA'}>
+                        <RSelect
+                            value={jurusan}
+                            onChange={jurusanChange}                                                    
+                            name='jurusan'
+                            options={dataJurusan}  
+                            isClearable={true}
+                            placeholder='jurusan...'
+                            styles={selectStyles}
+                        />
+                    </Conditional>
