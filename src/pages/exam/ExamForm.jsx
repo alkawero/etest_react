@@ -8,6 +8,14 @@ import { doUpload, doPost, doGet, doPut } from 'apis/api-service';
 import useStyles, { selectCustomZindex } from './examStyle'
 import { useCommonStyles } from 'themes/commonStyle'
 import Button from '@material-ui/core/Button';
+import DateFnsUtils from '@date-io/date-fns';
+import differenceInMinutes from 'date-fns/differenceInMinutes'
+import format from 'date-fns/format'
+import {
+    MuiPickersUtilsProvider,
+    KeyboardTimePicker,
+    KeyboardDatePicker,
+} from '@material-ui/pickers';
 import TextField from '@material-ui/core/TextField';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import 'assets/css/react-draft-wysiwyg.css';
@@ -39,7 +47,13 @@ import StatusChip from 'components/StatusChip';
 import DetailButton from 'components/DetailButton';
 import CheckButton from 'components/CheckButton';
 import TopDrawer from 'components/TopDrawer';
-import SoalForm from '../soal/SoalForm';
+import Card from '@material-ui/core/Card';
+import CardHeader from '@material-ui/core/CardHeader';
+import CardActions from '@material-ui/core/CardActions';
+import CardContent from '@material-ui/core/CardContent';
+import Typography from '@material-ui/core/Typography';
+import Close from '@material-ui/icons/Close';
+import IconButton from '@material-ui/core/IconButton';
 
 
 
@@ -61,10 +75,9 @@ const ExamForm = ({ create, update, onClose, exam, action, open }) => {
     const [openBottomDrawer, setOpenBottomDrawer] = useState(false)
     const [bottomDrawerTittle, setBottomDrawerTittle] = useState('')
 
-    const [soal, setSoal] = useState(null)
-    const [selectedSoal, setSelectedSoal] = useState([])
-    const [soalData, setSoalData] = useState([])
-    const getSoal = async () => {
+    const [rancanganSoal, setRancanganSoal] = useState(null)
+    const [rancanganSoalData, setRancanganSoalData] = useState([])
+    const getRancanganSoal = async () => {
         let params = {}
         if (jenjang !== null) {
             params = { ...params, jenjang: jenjang.value }
@@ -75,141 +88,64 @@ const ExamForm = ({ create, update, onClose, exam, action, open }) => {
         if (subject !== null) {
             params = { ...params, subject: subject.value }
         }
+ 
 
-        if (quotaComposition !== null) {
-            if (quotaComposition.value !== 'C') {
-                params = { ...params, answer_type: quotaComposition.value }
-            }
-        }
-
-        const response = await doGet('soal', params)
+        const response = await doGet('rancangan', params)
         if (!response.error) {
-            const selectedIds = selectedSoal.map(soal => (soal.id))
-            const availableData = response.data.filter(data => (!selectedIds.includes(data.id)))
-            setSoalData(availableData)
+            setRancanganSoalData(response.data)
         }
 
     }
 
 
-
-    const [soalQuota, setSoalQuota] = useState(0)
-    const soalQuotaChange = (e) => {
-        const value = parseInt(e.target.value)
-        if (action === 'edit' || action === 'create') {
-            if (value > 0) {
-                setSoalQuota(value)
-                if (quotaComposition === 'M') {
-                    setMcComposition(value)
-                    setEsComposition(0)
-                } else
-                    if (quotaComposition === 'E') {
-                        setEsComposition(value)
-                        setMcComposition(0)
-                    } else {
-                        setMcComposition(value-1)
-                        setEsComposition(1)
-                    }
-            }
-
-
-        }
-
-    }
-
-
-    const [dataQuotaComposition, setDataQuotaComposition] = useState([])
-    const getDataQuotaComposition = async () => {
-        const params = { group: 'quota_composition' }
-        const response = await doGet('param', params)
-        setDataQuotaComposition(response.data.map(j => ({ label: j.value, value: j.char_code })));
-    }
-    const [quotaComposition, setQuotaComposition] = useState({ value: 'M', label: 'multiple choice' })
-    const quotaCompositionChange = (e) => {
-        if (action === 'edit' || action === 'create') {
-            setQuotaComposition(e)
-            if (e.value === 'M') {
-                setMcComposition(soalQuota)
-                setEsComposition(0)
-            } else
-                if (e.value === 'E') {
-                    setEsComposition(soalQuota)
-                    setMcComposition(0)
-                }
-                else {
-                    setEsComposition(1)
-                    setMcComposition(soalQuota - 1)
-                }
-        }
-
-    }
-
-    const [mcComposition, setMcComposition] = useState(0)
-    const mcCompositionChange = (e) => {
-        const value = parseInt(e.target.value)
-        if (action === 'edit' || action === 'create') {
-            if ((value < soalQuota) && (value > 0)) {
-                setMcComposition(value)
-                setEsComposition(soalQuota - value)
-            }
-
-        }
-
-    }
-
-    const [esComposition, setEsComposition] = useState(0)
-    const esCompositionChange = (e) => {
-        const value = parseInt(e.target.value)
-        if (action === 'edit' || action === 'create') {
-            
-            if ((value < soalQuota) && (value > 0)) {
-                setEsComposition(value)
-                setMcComposition(soalQuota - value)
-
-            }
-        }
-
-    }
-
-    const [collaboration, setCollaboration] = useState('F')
-
-    const [partner, setPartner] = useState(null)
-    const addPartner = (user) => {
-        setPartner({ id: user.id, name: user.text })
-        setCollaboration('P')
+    const [pengawas, setPengawas] = useState(null)
+    const addPengawas = (user) => {
+        setPengawas({ id: user.id, name: user.text })
         setPopUpAnchor(null)
     }
 
-    const removePartner = (user) => {
-        setPartner(null)
-        setCollaboration('F')
-        setPartnerQuota(0)
+    const removePengawas = (user) => {
+        setPengawas(null)
     }
 
-    const [partnerQuota, setPartnerQuota] = useState(0)
-    const partnerQuotaChange = (e) => {
-        const value = parseInt(e.target.value)
-        if (action === 'edit' || action === 'create') {
-            if ( value < soalQuota && value > 0)
-                setPartnerQuota(value)
-        }
-
-
-    }
 
     const [popUpAnchor, setPopUpAnchor] = useState(null)
-    const showAddPartner = (e) => {
+    const showAddPengawas = (e) => {
         setPopUpAnchor(popUpAnchor ? null : e.currentTarget);
     }
+
+
+    const [scheduleDate, setScheduleDate] = useState(new Date())
+    const scheduleDateChange = (e) => {
+        if (action === 'edit' || action === 'create') {
+            setScheduleDate(e)
+        }
+    }
+    const [scheduleTimeStart, setScheduleTimeStart] = useState(new Date())
+    const scheduleTimeStartChange = (e) => {
+        if (action === 'edit' || action === 'create') {
+            setScheduleTimeStart(e)
+        }
+    }
+    const [scheduleTimeEnd, setScheduleTimeEnd] = useState(new Date())
+    const scheduleTimeEndChange = (e) => {
+        if (action === 'edit' || action === 'create') {
+            setScheduleTimeEnd(e)
+        }
+    }
+
+    const [duration, setDuration] = useState(0)
+
+
 
     const [dataSubject, setDataSubject] = useState([])
     const [subject, setSubject] = useState(null)
     const subjectChange = (e) => {
-        if (action === 'edit' || action === 'create'){
+        if (action === 'edit' || action === 'create') {
             setSubject(e)
-            setSelectedSoal([])
+            setRancanganSoal(null)
         }
-            
+
     }
     const getDataSubject = async () => {
         const params = { jenjang: jenjang.value, grade: grade.value }
@@ -227,6 +163,18 @@ const ExamForm = ({ create, update, onClose, exam, action, open }) => {
         const params = { group: 'exam_type' }
         const response = await doGet('param', params)
         setDataExamType(response.data.map(j => ({ label: j.value, value: j.num_code })));
+    }
+
+    const [dataSemester, setDataSemester] = useState([])
+    const [semester, setSemester] = useState(null)
+    const semesterChange = (e) => {
+        if (action === 'edit' || action === 'create')
+            setSemester(e)
+    }
+    const getDataSemester = async () => {
+        const params = { group: 'semester', status: 1 }
+        const response = await doGet('param', params)
+        setDataSemester(response.data.map(j => ({ label: j.desc, value: j.num_code })));
     }
 
     const [dataJenjang, setDataJenjang] = useState([])
@@ -262,6 +210,11 @@ const ExamForm = ({ create, update, onClose, exam, action, open }) => {
             clear()
     }, [open]);
 
+    useUpdateEffect(() => {
+        const minDiff = differenceInMinutes(scheduleTimeEnd, scheduleTimeStart)
+        setDuration(minDiff)
+    }, [scheduleTimeStart, scheduleTimeEnd]);
+
 
     const [tahunAjaran, setTahunAjaran] = useState('')
     const getTahunAjaran = async () => {
@@ -272,26 +225,25 @@ const ExamForm = ({ create, update, onClose, exam, action, open }) => {
 
     useEffect(() => {
         getTahunAjaran()
+        getDataSemester()
         getDataExamType()
         getDataJenjang()
-        getDataQuotaComposition()
     }, []);
 
     useEffect(() => {//setting for detail/edit
         if (exam) {
             setExamType({ label: exam.exam_type.value, value: exam.exam_type.num_code })
+            setSemester({ label: exam.exam_type.desc, value: exam.exam_type.num_code })
             setJenjang({ label: exam.jenjang, value: exam.jenjang, load: 'first-load' })
             setGrade({ label: exam.grade_num, value: exam.grade_char, load: 'first-load' })
             setSubject({ label: exam.subject_name, value: exam.subject_id, load: 'first-load' })
-            setSoalQuota(exam.soal_quota)
-            setQuotaComposition({ label: exam.quota_composition.value, value: exam.quota_composition.char_code })
-            setMcComposition(exam.mc_composition)
-            setEsComposition(exam.es_composition)
-            setCollaboration(exam.collaboration.char_code)
-            if (exam.partner_id !== null)
-                setPartner({ id: exam.partner_id, name: exam.partner_name })
-            setPartnerQuota(exam.partner_quota)
-            setSelectedSoal(exam.soals)
+            setScheduleDate(exam.schedule_date)
+            setScheduleTimeStart(exam.start_time)
+            setScheduleTimeEnd(exam.end_time)
+            setDuration(exam.duration)
+            if (exam.pengawas_id !== null)
+                setPengawas({ id: exam.pengawas.emp_id, name: exam.pengawas.emp_name })
+            setRancanganSoal(exam.rancangan)
         }
     },
         [exam])
@@ -329,19 +281,19 @@ const ExamForm = ({ create, update, onClose, exam, action, open }) => {
     }, [grade])
 
 
-    const showAddSoal = () => {
-        getSoal()
+    const showAddRancanganSoal = () => {
+        getRancanganSoal()
         setOpenBottomDrawer(true)
-        setBottomDrawerTittle('Add Soal To Exam')
+        setBottomDrawerTittle('Add Rancangan Soal To Exam')
     }
 
-    const closeAddSoal = () => {
-        setSoalData([])
+    const closeAddRancanganSoal = () => {
+        setRancanganSoalData([])
         setOpenBottomDrawer(false)
     }
 
     const getById = async (id) => {
-        const response = await doGet('soal/' + id)
+        const response = await doGet('rancangan/' + id)
         if (!response.error) {
             return response.data
         }
@@ -349,27 +301,23 @@ const ExamForm = ({ create, update, onClose, exam, action, open }) => {
 
     const detail = async (obj) => {
         const soal = await getById(obj.id)
-        setSoal(soal)
+        setRancanganSoal(soal)
         setOpenTopDrawer(true)
-        setTopDrawerTittle('Soal Detail')
+        setTopDrawerTittle('Rancangan RancanganSoal Detail')
     }
 
-    const closeDetailSoal = () => {
-        setSoal(null)
+    const closeDetailRancanganSoal = () => {
+        setRancanganSoal(null)
         setOpenTopDrawer(false)
     }
 
-    const chooseSoal = (soal) => {
-        const soalWithNo = { ...soal, no: selectedSoal.length + 1, bobot: 10 }
-        setSelectedSoal([...selectedSoal, soalWithNo])
-        closeAddSoal()
+    const chooseRancanganSoal = (soal) => {
+        setRancanganSoal(soal)
+        closeAddRancanganSoal()
     }
 
-    const removeSoal = (removedSoal) => {
-        const filtered = selectedSoal.filter(selected => (selected.id !== removedSoal.id))
-        let no = 0;
-        const arranged = filtered.map(soal => ({ ...soal, no: ++no }))
-        setSelectedSoal(arranged)
+    const removeRancanganSoal = () => {
+        setRancanganSoal(null)
     }
 
     const cancel = () => {
@@ -403,24 +351,20 @@ const ExamForm = ({ create, update, onClose, exam, action, open }) => {
                 grade_num: grade.label,
                 subject: subject.value,
                 tahun_ajaran_char: tahunAjaran,
-                soal_quota: soalQuota,
-                quota_composition: quotaComposition.value,
-                mc_composition: mcComposition,
-                es_composition: esComposition,
-                collaboration_type: collaboration,
-                partner_quota: partnerQuota,
                 creator: user.id,
+                schedule_date:format(scheduleDate, 'yyyy/MM/dd'),
+                start_time:format(scheduleTimeStart,'yyyy/MM/dd HH:mm'),
+                end_time:format(scheduleTimeEnd,'yyyy/MM/dd HH:mm'),
                 status: status,
-                exam_type_code: examType.value
+                exam_type: examType.value,
+                duration:duration
             }
 
-            if (partner !== null) {
-                newExam = { ...newExam, partner: partner.id, }
+            if (pengawas !== null) {
+                newExam = { ...newExam, pengawas: pengawas.id, }
             }
 
-            const soals = selectedSoal.map(soal => ({ id: soal.id, bobot: soal.bobot, soal_num: soal.no, add_by: user.id }))
-
-            newExam = { ...newExam, soals: soals }
+            newExam = { ...newExam, rancangan: rancanganSoal.id }
 
             if (exam) {
                 newExam = { ...newExam, id: exam.id }
@@ -440,14 +384,9 @@ const ExamForm = ({ create, update, onClose, exam, action, open }) => {
         setJenjang(null)
         setGrade(null)
         setSubject(null)
-        setSoalQuota(0)
-        setQuotaComposition({ value: 'M', label: 'multiple choice' })
-        setMcComposition(0)
-        setEsComposition(0)
-        setPartner(null)
-        setCollaboration('F')
-        setPartnerQuota(0)
-        setSelectedSoal([])
+
+        setPengawas(null)
+        setRancanganSoal(null)
         setErrorState({})
     }
 
@@ -465,6 +404,15 @@ const ExamForm = ({ create, update, onClose, exam, action, open }) => {
                             styles={selectCustomZindex}
                         />
                     </Grid>
+
+                    <RSelect
+                        value={semester}
+                        onChange={semesterChange}
+                        name='semester'
+                        options={dataSemester}
+                        placeholder='semester...'
+                        styles={selectCustomZindex}
+                    />
 
                     <RSelect
                         value={jenjang}
@@ -493,149 +441,162 @@ const ExamForm = ({ create, update, onClose, exam, action, open }) => {
                         styles={selectCustomZindex}
                     />
 
-                    <TextField
-                        id="soalQuota"
-                        value={soalQuota}
-                        margin="dense"
-                        onChange={soalQuotaChange}
-                        variant='outlined'
-                        type="number"
-                        label='jumlah soal'
-                        style={{ margin: '-1px 4px 0 4px', width: 100 }}
-                    />
-
-                    <RSelect
-                        value={quotaComposition}
-                        onChange={quotaCompositionChange}
-                        name='bentuk soal'
-                        options={dataQuotaComposition}
-                        placeholder='bentuk soal...'
-                        styles={selectCustomZindex}
-                    />
-
-                    <Conditional condition={quotaComposition.value === 'C'}>
-                        <TextField
-                            id="mcComposition"
-                            value={mcComposition}
-                            margin="dense"
-                            type="number"
-                            onChange={mcCompositionChange}
-                            variant='outlined'
-                            label='multiple choice'
-                            style={{ margin: '-1px 4px 0 4px', width: 130 }}
-                        />
-                    </Conditional>
-
-                    <Conditional condition={quotaComposition.value === 'C'}>
-                        <TextField
-                            id="esComposition"
-                            value={esComposition}
-                            margin="dense"
-                            onChange={esCompositionChange}
-                            variant='outlined'
-                            type="number"
-                            label='essay'
-                            style={{ margin: '-1px 4px 0 4px', width: 100 }}
-                        />
-                    </Conditional>
-
-                    <Conditional condition={collaboration === 'P'}>
-                        <TextField
-                            id="myQuota"
-                            value={soalQuota - partnerQuota}
-                            margin="dense"
-                            variant='outlined'
-                            type="number"
-                            label='my quota'
-                            style={{ margin: '-1px 4px 0 4px', width: 100 }}
-                        />
-                    </Conditional>
 
 
-                    <Conditional condition={collaboration === 'F' && (action === 'edit' || action === 'create')}>
-                        <Grid container item xs={2} alignItems='center' style={{ height: 40 }}>
-                            <AddButton text='Add Partner' action={showAddPartner} classes={common.marginX} />
+
+
+
+
+                    <Conditional condition={rancanganSoal === null && (action === 'edit' || action === 'create')}>
+                        <Grid container alignItems='center' style={{ height: 40, width: 210 }}>
+                            <AddButton text='Add Rancangan Soal' action={showAddRancanganSoal} classes={common.marginX} />
                         </Grid>
-                    </Conditional>
-                    <Conditional condition={collaboration === 'P'}>
-                        <Grid wrap='nowrap' container item xs={3} alignItems='center' justify='space-around' style={{ height: 40 }}>
-                            <Chip
-                                label={partner !== null && 'partner : ' + partner.name.substring(0, 15)}
-                                onDelete={removePartner}
-                                className={classes.chip}
-                                color="primary"
-                            />
-                            <TextField
-                                id="partnerQuota"
-                                value={partnerQuota}
-                                margin="dense"
-                                onChange={partnerQuotaChange}
-                                variant='outlined'
-                                type="number"
-                                label='partner quota'
-                                style={{ margin: '-1px 4px 0 4px', width: 100 }}
-                            />
-                        </Grid>
-
                     </Conditional>
 
                     <Conditional condition={action === 'edit' || action === 'create'}>
-                        <Grid container item xs={2} alignItems='center' style={{ height: 40 }}>
-                            <AddButton text='Add Soal' action={showAddSoal} classes={common.marginX} />
+                        <Grid container alignItems='center' style={{ height: 40, width: 150 }}>
+                            <AddButton text='Add Peserta' action={showAddRancanganSoal} classes={common.marginX} />
                         </Grid>
                     </Conditional>
+
+                    <Conditional condition={pengawas === null && (action === 'edit' || action === 'create')}>
+                        <Grid container alignItems='center' style={{ height: 40, width: 160 }}>
+                            <AddButton text='Add Pengawas' action={showAddPengawas} classes={common.marginX} />
+                        </Grid>
+                    </Conditional>
+
+                    <Grid container>
+                        <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                            <KeyboardDatePicker
+                                disableToolbar
+                                variant="inline"
+                                format="MM/dd/yyyy"
+                                margin="normal"
+                                id="schedule-date"
+                                label="schedule date"
+                                value={scheduleDate}
+                                onChange={scheduleDateChange}
+                                KeyboardButtonProps={{
+                                    'aria-label': 'change date',
+                                }}
+                            />
+
+                            <KeyboardTimePicker
+                                margin="normal"
+                                id="schedule-time-start"
+                                label="schedule time start"
+                                value={scheduleTimeStart}
+                                onChange={scheduleTimeStartChange}
+                                KeyboardButtonProps={{
+                                    'aria-label': 'change time',
+                                }}
+                            />
+
+                            <KeyboardTimePicker
+                                margin="normal"
+                                id="schedule-time-end"
+                                label="schedule time end"
+                                value={scheduleTimeEnd}
+                                onChange={scheduleTimeEndChange}
+                                KeyboardButtonProps={{
+                                    'aria-label': 'change time',
+                                }}
+                            />
+
+                        </MuiPickersUtilsProvider>
+                        <Grid container alignItems='center' style={{ width: 80 }}>
+                            <TextField
+                                id="duration"
+                                value={duration}
+                                margin="dense"
+                                variant='outlined'
+                                label='duration'
+                                helperText="minutes"
+                                style={{ margin: '-1px 4px 0 4px', width: 65 }}
+                            />
+                        </Grid>
+                    </Grid>
                     <span style={{ color: 'red', margin: '0 16px' }}>{errorState.ejenjang}</span>
                     <span style={{ color: 'red', margin: '0 16px' }}>{errorState.egrade}</span>
                     <span style={{ color: 'red', margin: '0 16px' }}>{errorState.esubject}</span>
 
                 </Grid>
-                <Grid container className={clsx(classes.table_wrapper, common.borderTopRadius, common.marginTop)}>
-                    <Table className={classes.table}>
-                        <TableHead>
-                            <TableRow className={classes.table_header}>
-                                <TableCell className={common.borderTopLeftRadius}>No</TableCell>
-                                <TableCell>KD</TableCell>
-                                <TableCell>Materi</TableCell>
-                                <TableCell>Ranah</TableCell>
-                                <TableCell>Pembuat</TableCell>
-                                <TableCell>Bentuk</TableCell>
-                                <TableCell className={common.borderTopRightRadius}>Status</TableCell>
-                                <TableCell>Action</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {selectedSoal.map(row => (
-                                <TableRow key={row.id} className={classes.tableRow}>
 
-                                    <TableCell>
-                                        {row.no}
-                                    </TableCell>
-                                    <TableCell>{row.kds.join(',')}</TableCell>
-                                    <TableCell>{row.materis.join(',')}</TableCell>
-                                    <TableCell>{row.ranahs.join(',')}</TableCell>
-                                    <TableCell>{row.creator_name}</TableCell>
-                                    <TableCell>{row.type_name}</TableCell>
-                                    <TableCell>
-                                        <StatusChip status={row.active} />
-                                    </TableCell>
-                                    <TableCell>
-                                        <Grid container wrap='nowrap'>
-                                            <DetailButton tooltip='detail' action={() => detail(row)} classes={classes.floatButton} />
-                                            <Conditional condition={action === 'edit' || action === 'create'}>
-                                                <Protected current={currentAccess} only='D'>
-                                                    <DeleteButton tooltip='remove soal' action={() => removeSoal(row)} classes={classes.floatButton} />
-                                                </Protected>
-                                            </Conditional>
-                                        </Grid>
-                                    </TableCell>
+                <Grid container spacing={2} className={common.marginY}>
+                    <Conditional condition={rancanganSoal !== null}>
+                        <Grid item>
+                            <Card className={classes.card}>
+                                <CardHeader
+                                    title="Soal Ujian"
+                                    action={
+                                        <IconButton aria-label="settings" className={classes.iconButton} onClick={removeRancanganSoal}>
+                                            <Close />
+                                        </IconButton>
+                                    }
+                                    style={{ color: 'white', backgroundColor: '#15cd8f' }}
+                                />
+                                <CardContent>
+                                    <Typography variant="h5" component="h2" className={classes.title} gutterBottom>
+                                        {rancanganSoal !== null && rancanganSoal.exam_type.value}
+                                        {' '}
+                                        {rancanganSoal !== null && rancanganSoal.jenjang}
+                                    </Typography>
+                                    <Typography variant="subtitle1" color="textSecondary" className={classes.title} gutterBottom>
+                                        {rancanganSoal !== null && rancanganSoal.subject_name}
+                                    </Typography>
+                                    <Typography variant="subtitle1" color="textSecondary" className={classes.title} gutterBottom>
+                                        Kelas {rancanganSoal !== null && rancanganSoal.grade_num}
+                                    </Typography>
+                                </CardContent>
+                            </Card>
+                        </Grid>
+                    </Conditional>
+                    <Grid item>
+                        <Card className={classes.card}>
+                            <CardHeader
+                                title="Peserta"
+                                action={
+                                    <IconButton aria-label="settings" className={classes.iconButton}>
+                                        <Close />
+                                    </IconButton>
+                                }
+                                style={{ color: 'white', backgroundColor: '#15cd8f' }}
+                            />
+                            <CardContent>
+                                <Typography variant="h5" component="h2" className={classes.title} gutterBottom>
+                                    Siswa SMA
+                            </Typography>
+                                <Typography variant="subtitle1" color="textSecondary" className={classes.title} gutterBottom>
+                                    Kelas 12 IPA 1
+                            </Typography>
+                            </CardContent>
+                        </Card>
+                    </Grid>
 
-                                </TableRow>
-                            ))}
-                        </TableBody>
-
-                    </Table>
+                    <Conditional condition={pengawas !== null}>
+                        <Grid item>
+                            <Card className={classes.card}>
+                                <CardHeader
+                                    title="Pengawas"
+                                    action={
+                                        <IconButton onClick={removePengawas} aria-label="settings" className={classes.iconButton}>
+                                            <Close />
+                                        </IconButton>
+                                    }
+                                    style={{ color: 'white', backgroundColor: '#15cd8f' }}
+                                />
+                                <CardContent>
+                                    <Typography variant="h5" component="h2" className={classes.title} gutterBottom>
+                                        {pengawas !== null && pengawas.name}
+                                    </Typography>
+                                    <Typography variant="subtitle1" color="textSecondary" className={classes.title} gutterBottom>
+                                        {pengawas !== null && pengawas.id}
+                                    </Typography>
+                                </CardContent>
+                            </Card>
+                        </Grid>
+                    </Conditional>
                 </Grid>
-
 
                 <Conditional condition={action === 'edit' || action === 'create'}>
                     <Grid item container justify='space-between' className={classes.addAction}>
@@ -650,47 +611,32 @@ const ExamForm = ({ create, update, onClose, exam, action, open }) => {
             </Grid>
 
             <PopUp anchor={popUpAnchor} position='bottom'>
-                <SearchListAsync path={'user'} action={addPartner} />
+                <SearchListAsync path={'user'} action={addPengawas} />
             </PopUp>
 
-            <BottomDrawer tittle={bottomDrawerTittle} open={openBottomDrawer} close={closeAddSoal}>
+            <BottomDrawer tittle={bottomDrawerTittle} open={openBottomDrawer} close={closeAddRancanganSoal}>
                 <Grid item xs={12} container className={clsx(classes.table_wrapper, common.borderTopRadius)}>
                     <Table className={classes.table}>
                         <TableHead>
                             <TableRow className={classes.table_header}>
-                                <TableCell className={common.borderTopLeftRadius}>Pelajaran</TableCell>
+                                <TableCell className={common.borderTopLeftRadius}>Ujian</TableCell>
+                                <TableCell>Pelajaran</TableCell>
                                 <TableCell>Jenjang</TableCell>
                                 <TableCell>Kelas</TableCell>
-                                <TableCell>KD</TableCell>
-                                <TableCell>Materi</TableCell>
-                                <TableCell>Ranah</TableCell>
-                                <TableCell>Pembuat</TableCell>
-                                <TableCell>Bentuk</TableCell>
-                                <TableCell className={common.borderTopRightRadius}>Status</TableCell>
                                 <TableCell>Action</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {soalData.map(row => (
+                            {rancanganSoalData.map(row => (
                                 <TableRow key={row.id} className={classes.tableRow}>
 
-                                    <TableCell>
-                                        {row.subject_name}
-                                    </TableCell>
-                                    <TableCell >{row.jenjang}</TableCell>
-                                    <TableCell>{row.grade_num}</TableCell>
-                                    <TableCell>{row.kds.join(',')}</TableCell>
-                                    <TableCell>{row.materis.join(',')}</TableCell>
-                                    <TableCell>{row.ranahs.join(',')}</TableCell>
-                                    <TableCell>{row.creator_name}</TableCell>
-                                    <TableCell>{row.type_name}</TableCell>
-                                    <TableCell>
-                                        <StatusChip status={row.active} />
-                                    </TableCell>
+                                    <TableCell>{row.exam_type.value}</TableCell>
+                                    <TableCell >{row.subject_name}</TableCell>
+                                    <TableCell>{row.jenjang}</TableCell>
+                                    <TableCell >{row.grade_num}</TableCell>
                                     <TableCell>
                                         <Grid container wrap='nowrap'>
-                                            <DetailButton tooltip='detail' action={() => detail(row)} classes={classes.floatButton} />
-                                            <CheckButton tooltip='choose soal' action={() => chooseSoal(row)} classes={classes.floatButton} />
+                                            <CheckButton tooltip='choose soal' action={() => chooseRancanganSoal(row)} classes={classes.floatButton} />
                                         </Grid>
                                     </TableCell>
 
@@ -699,15 +645,10 @@ const ExamForm = ({ create, update, onClose, exam, action, open }) => {
                         </TableBody>
                         <TableHead>
                             <TableRow className={classes.table_header}>
+                                <TableCell>Ujian</TableCell>
                                 <TableCell>Pelajaran</TableCell>
                                 <TableCell>Jenjang</TableCell>
                                 <TableCell>Kelas</TableCell>
-                                <TableCell>KD</TableCell>
-                                <TableCell>Materi</TableCell>
-                                <TableCell>Ranah</TableCell>
-                                <TableCell>Pembuat</TableCell>
-                                <TableCell>Bentuk</TableCell>
-                                <TableCell>Status</TableCell>
                                 <TableCell>Action</TableCell>
                             </TableRow>
                         </TableHead>
@@ -715,9 +656,7 @@ const ExamForm = ({ create, update, onClose, exam, action, open }) => {
                 </Grid>
             </BottomDrawer>
 
-            <TopDrawer tittle={topDrawerTittle} open={openTopDrawer} close={closeDetailSoal}>
-                <SoalForm action='detail' soal={soal} onClose={closeDetailSoal} />
-            </TopDrawer>
+
         </>
 
     );

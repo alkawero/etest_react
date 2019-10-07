@@ -259,6 +259,10 @@ const ExamPage = (props) => {
                                     <TableCell>Jenjang</TableCell>
                                     <TableCell>Grade</TableCell>
                                     <TableCell>Year</TableCell>
+                                    <TableCell>Date</TableCell>
+                                    <TableCell>Start</TableCell>
+                                    <TableCell>End</TableCell>
+                                    <TableCell>Duration</TableCell>
                                     <TableCell className={common.borderTopRightRadius}>Status</TableCell>
                                 </TableRow>
                             </TableHead>
@@ -284,6 +288,10 @@ const ExamPage = (props) => {
                                         <TableCell>{row.jenjang}</TableCell>
                                         <TableCell>{row.grade_num}</TableCell>
                                         <TableCell>{row.tahun_ajaran_char}</TableCell>                                        
+                                        <TableCell>{row.schedule_date}</TableCell>
+                                        <TableCell>{row.start_time.substring(11, 16)}</TableCell>
+                                        <TableCell>{row.end_time.substring(11, 16)}</TableCell>
+                                        <TableCell>{row.duration}</TableCell>
                                         <TableCell>{row.status.value}</TableCell>
 
                                     </TableRow>
@@ -296,6 +304,10 @@ const ExamPage = (props) => {
                                     <TableCell>Jenjang</TableCell>
                                     <TableCell>Grade</TableCell>
                                     <TableCell>Year</TableCell>
+                                    <TableCell>Date</TableCell>
+                                    <TableCell>Start</TableCell>
+                                    <TableCell>End</TableCell>
+                                    <TableCell>Duration</TableCell>
                                     <TableCell>Status</TableCell>
                                 </TableRow>
                             </TableHead>
