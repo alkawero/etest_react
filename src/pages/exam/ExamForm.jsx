@@ -11,6 +11,7 @@ import Button from '@material-ui/core/Button';
 import DateFnsUtils from '@date-io/date-fns';
 import differenceInMinutes from 'date-fns/differenceInMinutes'
 import format from 'date-fns/format'
+import parse from 'date-fns/parse'
 import {
     MuiPickersUtilsProvider,
     KeyboardTimePicker,
@@ -129,6 +130,7 @@ const ExamForm = ({ create, update, onClose, exam, action, open }) => {
     }
     const [scheduleTimeEnd, setScheduleTimeEnd] = useState(new Date())
     const scheduleTimeEndChange = (e) => {
+        
         if (action === 'edit' || action === 'create') {
             setScheduleTimeEnd(e)
         }
@@ -237,9 +239,9 @@ const ExamForm = ({ create, update, onClose, exam, action, open }) => {
             setJenjang({ label: exam.jenjang, value: exam.jenjang, load: 'first-load' })
             setGrade({ label: exam.grade_num, value: exam.grade_char, load: 'first-load' })
             setSubject({ label: exam.subject_name, value: exam.subject_id, load: 'first-load' })
-            setScheduleDate(exam.schedule_date)
-            setScheduleTimeStart(exam.start_time)
-            setScheduleTimeEnd(exam.end_time)
+            setScheduleDate(parse(exam.schedule_date, 'yyyy-MM-dd', new Date()))
+            setScheduleTimeStart(parse(exam.start_time, 'yyyy-MM-dd HH:mm:ss', new Date()))
+            setScheduleTimeEnd(parse(exam.end_time, 'yyyy-MM-dd HH:mm:ss', new Date()))
             setDuration(exam.duration)
             if (exam.pengawas_id !== null)
                 setPengawas({ id: exam.pengawas.emp_id, name: exam.pengawas.emp_name })
@@ -340,6 +342,15 @@ const ExamForm = ({ create, update, onClose, exam, action, open }) => {
             errors = { ...errors, esubject: 'please choose subject' }
         }
 
+        if (pengawas === null) {
+            errors = { ...errors, epengawas: 'please add pengawas' }
+        }
+
+        if (rancanganSoal === null) {
+            errors = { ...errors, erancangan: 'please add rancangan soal' }
+        }
+
+
 
         setErrorState(errors)
 
@@ -357,15 +368,12 @@ const ExamForm = ({ create, update, onClose, exam, action, open }) => {
                 end_time:format(scheduleTimeEnd,'yyyy/MM/dd HH:mm'),
                 status: status,
                 exam_type: examType.value,
-                duration:duration
+                duration:duration,
+                pengawas:pengawas.id,
+                rancangan: rancanganSoal.id
             }
 
-            if (pengawas !== null) {
-                newExam = { ...newExam, pengawas: pengawas.id, }
-            }
-
-            newExam = { ...newExam, rancangan: rancanganSoal.id }
-
+            
             if (exam) {
                 newExam = { ...newExam, id: exam.id }
                 update(newExam)
@@ -470,7 +478,7 @@ const ExamForm = ({ create, update, onClose, exam, action, open }) => {
                             <KeyboardDatePicker
                                 disableToolbar
                                 variant="inline"
-                                format="MM/dd/yyyy"
+                                format="dd/MM/yyyy"
                                 margin="normal"
                                 id="schedule-date"
                                 label="schedule date"
@@ -519,6 +527,8 @@ const ExamForm = ({ create, update, onClose, exam, action, open }) => {
                     <span style={{ color: 'red', margin: '0 16px' }}>{errorState.ejenjang}</span>
                     <span style={{ color: 'red', margin: '0 16px' }}>{errorState.egrade}</span>
                     <span style={{ color: 'red', margin: '0 16px' }}>{errorState.esubject}</span>
+                    <span style={{ color: 'red', margin: '0 16px' }}>{errorState.epengawas}</span>
+                    <span style={{ color: 'red', margin: '0 16px' }}>{errorState.erancangan}</span>
 
                 </Grid>
 

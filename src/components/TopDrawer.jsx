@@ -45,8 +45,9 @@ const useStyles = makeStyles(theme => ({
         display:'flex',
         justifyContent:'center',
         background:'white',
-        flexDirection:'row'
+        flexDirection:'row',
         //opacity: '0.1'
+        overflowX:'hidden'
     },
     drawerContainer:{
         borderRadius: '0px 0px 10px 10px',

@@ -9,7 +9,6 @@ import AlkaSnackbar from 'components/AlkaSnackbar'
 import Hidden from '@material-ui/core/Hidden';
 import Grid  from '@material-ui/core/Grid';
 import { makeStyles } from '@material-ui/styles';
-import Dashboard from '../dashboards/Dashboard';
 import IconButton from '@material-ui/core/IconButton';
 import NotificationsIcon from '@material-ui/icons/Notifications';
 import DirectionsRun from '@material-ui/icons/DirectionsRun';
@@ -33,6 +32,7 @@ const SoalPage =  lazy(() => import('pages/soal/SoalPage'))
 const UjianPage =  lazy(() => import('pages/ujian/UjianPage'))
 const ParamPage =  lazy(() => import('pages/parameter/ParamPage'))
 const ExamPage =  lazy(() => import('pages/exam/ExamPage'))
+const Dashboard =  lazy(() => import('pages/dashboard/Dashboard'))
 
 
 
@@ -70,8 +70,6 @@ const HomePage = (props) => {
     }
 
     if(isLogged(user)){
-        //const DashboardPage = () => (<Dashboard role_code={props.user.role.code}/>)
-        const DashboardPage = null
         return(
             <>
             <Grid container spacing={0} className={classes.root} wrap='nowrap'>
@@ -118,7 +116,8 @@ const HomePage = (props) => {
                     <Grid container className={classes.main}>                        
                         <Suspense fallback={<MainComponentLoader/>}>
                             <Switch>
-                                <Route exact path='/home' component={DashboardPage} />   
+                                <Route exact path='/home' component={Dashboard} />   
+                                <Route path='/home/dashboard' component={Dashboard} />  
                                 <Route path='/home/pages' component={Page} />
                                 <Route path='/home/roles' component={RolePage} />
                                 <Route path='/home/soal' component={SoalPage} />

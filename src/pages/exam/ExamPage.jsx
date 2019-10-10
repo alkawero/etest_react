@@ -21,7 +21,7 @@ import TopDrawer from 'components/TopDrawer';
 import ExamForm from './ExamForm';
 import Select from 'react-select';
 
-import { doGet, doPost, doDelete, doPut,doPatch } from 'apis/api-service';
+import { doGet, doPost, doDelete, doPut, doPatch } from 'apis/api-service';
 import Protected from 'components/Protected';
 import clsx from 'clsx';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
@@ -161,7 +161,7 @@ const ExamPage = (props) => {
     const addButtonClick = () => {
         setOpenTopDrawer(true)
         setTopDrawerTittle('Buat Exam')
-        setTopDrawerContent(<ExamForm action='create' create={create} onClose={closeTopDrawer}  />)
+        setTopDrawerContent(<ExamForm action='create' create={create} onClose={closeTopDrawer} />)
     }
 
     const closeTopDrawer = () => {
@@ -178,7 +178,16 @@ const ExamPage = (props) => {
         await doPut('exam', p, 'save exam')
         setRefresh(refresh + 1)
     }
-    
+
+    const toggle = async (s) => {
+        const newObject = {
+            ...s,
+            status: s.status === 0 ? 1 : 0
+        }
+        await doPatch('exam/toggle', newObject, 'save exam')
+        setRefresh(refresh + 1)
+    }
+
 
     const filterClick = (event) => {
         setFilterAnchor(filterAnchor ? null : event.currentTarget);
@@ -191,11 +200,11 @@ const ExamPage = (props) => {
         setTopDrawerTittle('Exam Detail')
     }
 
-    
+
 
     const edit = async (p) => {
         const exam = await getById(p.id)
-        setTopDrawerContent(<ExamForm action='edit' update={update} exam={exam} onClose={closeTopDrawer}  />)
+        setTopDrawerContent(<ExamForm action='edit' update={update} exam={exam} onClose={closeTopDrawer} />)
         setOpenTopDrawer(true)
         setTopDrawerTittle('Edit exam')
     }
@@ -263,7 +272,8 @@ const ExamPage = (props) => {
                                     <TableCell>Start</TableCell>
                                     <TableCell>End</TableCell>
                                     <TableCell>Duration</TableCell>
-                                    <TableCell className={common.borderTopRightRadius}>Status</TableCell>
+                                    <TableCell>Status</TableCell>
+                                    <TableCell className={common.borderTopRightRadius}>Activity</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -274,6 +284,9 @@ const ExamPage = (props) => {
                                             <div className={clsx(classes.actionWrapper, 'actionWrapper')}>
                                                 <Protected current={currentAccess} only='R'>
                                                     <DetailButton tooltip='detail' action={() => detail(row)} classes={classes.floatButton} />
+                                                </Protected>
+                                                <Protected current={currentAccess} only='W'>
+                                                    <SwitchButton tooltip='change status' action={() => toggle(row)} checked={row.status === 1 || row.status === true} />
                                                 </Protected>
                                                 <Protected current={currentAccess} only='W'>
                                                     <EditButton tooltip='edit' action={() => edit(row)} classes={classes.floatButton} />
@@ -287,12 +300,15 @@ const ExamPage = (props) => {
                                         <TableCell >{row.subject_name}</TableCell>
                                         <TableCell>{row.jenjang}</TableCell>
                                         <TableCell>{row.grade_num}</TableCell>
-                                        <TableCell>{row.tahun_ajaran_char}</TableCell>                                        
+                                        <TableCell>{row.tahun_ajaran_char}</TableCell>
                                         <TableCell>{row.schedule_date}</TableCell>
                                         <TableCell>{row.start_time.substring(11, 16)}</TableCell>
                                         <TableCell>{row.end_time.substring(11, 16)}</TableCell>
                                         <TableCell>{row.duration}</TableCell>
-                                        <TableCell>{row.status.value}</TableCell>
+                                        <TableCell>
+                                            <StatusChip status={row.status} />
+                                        </TableCell>
+                                        <TableCell>{row.activity.value}</TableCell>
 
                                     </TableRow>
                                 ))}
@@ -309,6 +325,7 @@ const ExamPage = (props) => {
                                     <TableCell>End</TableCell>
                                     <TableCell>Duration</TableCell>
                                     <TableCell>Status</TableCell>
+                                    <TableCell>Activity</TableCell>
                                 </TableRow>
                             </TableHead>
                         </Table>
