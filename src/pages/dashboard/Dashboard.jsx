@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useUpdateEffect } from 'react-use';
+import {setExamsData,setExamStatus} from 'reduxs/actions'
+import { withRouter } from "react-router";
 import { doGet, doPost, doDelete, doPut, doPatch } from 'apis/api-service';
 import useStyles from './dashboardStyle';
 import { useCommonStyles } from 'themes/commonStyle'
+import clsx from 'clsx';
 import Grid from '@material-ui/core/Grid';
 import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
@@ -20,6 +23,7 @@ import Select from 'react-select';
 import format from 'date-fns/format'
 import parse from 'date-fns/parse'
 import isToday from 'date-fns/isToday'
+import Conditional from 'components/Conditional';
 
 import formatDistance from 'date-fns/formatDistance'
 import {
@@ -28,12 +32,15 @@ import {
     KeyboardDatePicker,
 } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
+import { useDispatch } from "react-redux";
 
 
 
 const Dashboard = (props) => {
     const classes = useStyles()
     const common = useCommonStyles()
+    const dispatch = useDispatch()
+
     const [examData, setExamData] = useState([])
     const [exam, setExam] = useState(null)
 
@@ -104,6 +111,14 @@ const Dashboard = (props) => {
         setAnchorMenuExam(null);
     };
 
+    const takeExam = (exam) => {
+        dispatch(setExamStatus('start'))
+        dispatch(setExamsData(exam))
+        props.history.push('/exam')    
+    };
+
+    
+
 
 
     return (
@@ -111,7 +126,7 @@ const Dashboard = (props) => {
             <Grid container>
                 <Grid item xs={2} container alignItems='flex-start' direction='column'>
                     <Grid>
-                        <Chip label="Exam Schedules" variant="outlined" />
+                        <Chip label="Exam Schedules" variant="outlined" onClick={getExam}/>
                     </Grid>
                     <Grid>
                         <Select
@@ -160,6 +175,7 @@ const Dashboard = (props) => {
                                             style={{ color: 'white', backgroundColor: '#15cd8f' }}
                                         />
                                         <CardContent>
+                                            <Grid container direction='column' justify='space-between'>
                                             <Typography variant="h5" component="h2" className={classes.title} gutterBottom>
                                                 {exam.grade_num} {' '} {exam.jenjang}
                                             </Typography>
@@ -183,16 +199,21 @@ const Dashboard = (props) => {
                                                     label={exam.activity.value}
                                                     color="primary"
                                                 />
+                                                <Grid container justify='center' alignItems='center' className={clsx(common.marginTop,classes.buttonWrapper)}>
+                                                <Conditional condition={exam.activity.num_code===1}>
                                                 <Button
                                                     variant="contained"
                                                     color="primary"
-                                                    className={classes.button}
+                                                    className={common.backgroundColorHijau}
                                                     endIcon={<Create/>}
+                                                    onClick={()=>takeExam(exam)}
                                                 >
                                                     take exam now
                                                 </Button>
+                                                </Conditional>
+                                                </Grid>
                                             </Grid>
-
+</Grid>
                                         </CardContent>
                                     </Card>
                                 </Grid>
@@ -220,4 +241,4 @@ const Dashboard = (props) => {
     )
 }
 
-export default Dashboard
+export default withRouter(Dashboard)

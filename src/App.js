@@ -9,7 +9,7 @@ import MainComponentLoader from './components/MainComponentLoader';
 const LoginPage =  lazy(() => import("pages/login/LoginPage"))
 const HomePage =  lazy(() => import("pages/home/HomePage"))
 const NotFoundPage =  lazy(() => import("pages/error/NotFoundPage"))
-const UjianFormPage =  lazy(() => import("pages/ujian/UjianFormPage"))
+const ExamPage =  lazy(() => import("pages/exam/ExamPage"))
 
 
 const App = () => {
@@ -23,7 +23,7 @@ const App = () => {
             <Route exact path="/" component={HomePage} />
             <Route path="/home" component={HomePage} />
             <Route path="/login" component={LoginPage} />
-            <Route path="/exam" component={UjianFormPage} />
+            <Route path="/exam" component={ExamPage} />
             <Route component={NotFoundPage} />
           </Switch> 
         </Suspense>                     

@@ -51,6 +51,9 @@ export const useCommonStyles = makeStyles(theme => ({
     },
     borderBottomRightRadius:{
         borderRadius:'0 0 4px 0'
+    },
+    backgroundColorHijau:{
+        backgroundColor:'#15cd8f'
     }
     
     

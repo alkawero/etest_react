@@ -77,14 +77,14 @@ const LoginPage = (props) => {
     if(isLogged(user)){        
         
         const activePage = user.pages.filter(page=>{
-            return page.path==='/home/dashboard'
+            return page.path==='/'
         })[0]
         
         if(!ui.active_page){
             dispatch(setActivePage(activePage))
         }       
         
-        return <Redirect to={{ pathname: "/home/dashboard" }} />
+        return <Redirect to={{ pathname: "/" }} />
     }
 
     return(

@@ -5,7 +5,7 @@ const useStyles = makeStyles(theme => ({
         padding:24
     },
     cardWrapper:{
-        height:320, 
+        height:340, 
         overflowX:'auto',
         overflowY:'hidden'    
     },
@@ -23,6 +23,9 @@ const useStyles = makeStyles(theme => ({
     select:{
         width:150,
         marginTop:8
+    },
+    buttonWrapper:{
+        height:50
     }
     
   }));

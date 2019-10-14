@@ -11,13 +11,13 @@ const initial  = {
         loading:false        
     },
     role_access_map:[],
-    test:{
-        end_time:'',
-        start:false
-    },
+    exam:{
+        
+    } ,
     setting:{
 
-    }
+    },
+    
 }
 
 export default function appReducer(prev=initial,action){
@@ -69,6 +69,19 @@ export default function appReducer(prev=initial,action){
                 tahunPelajaran:action.payload}
         })
         
+        case 'setExamsData':
+        return produce(prev, state =>{
+            state.exam= {
+                ...state.exam,
+                exam_data:action.payload}
+        })
+
+        case 'setExamStatus':
+        return produce(prev, state =>{
+            state.exam= {
+                ...state.exam,
+                exam_status:action.payload}
+        })
 
         default:
             return prev

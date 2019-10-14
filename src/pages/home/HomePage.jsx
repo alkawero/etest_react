@@ -29,9 +29,8 @@ const Page =  lazy(() => import('pages/page/Page'))
 const RolePage =  lazy(() => import('pages/role/RolePage'))
 const RancanganPage =  lazy(() => import('pages/rancangan/RancanganPage'))
 const SoalPage =  lazy(() => import('pages/soal/SoalPage'))
-const UjianPage =  lazy(() => import('pages/ujian/UjianPage'))
 const ParamPage =  lazy(() => import('pages/parameter/ParamPage'))
-const ExamPage =  lazy(() => import('pages/exam/ExamPage'))
+const SchedulePage =  lazy(() => import('pages/schedule/SchedulePage'))
 const Dashboard =  lazy(() => import('pages/dashboard/Dashboard'))
 
 
@@ -116,15 +115,14 @@ const HomePage = (props) => {
                     <Grid container className={classes.main}>                        
                         <Suspense fallback={<MainComponentLoader/>}>
                             <Switch>
+                                <Route exact path='/' component={Dashboard} />   
                                 <Route exact path='/home' component={Dashboard} />   
-                                <Route path='/home/dashboard' component={Dashboard} />  
                                 <Route path='/home/pages' component={Page} />
                                 <Route path='/home/roles' component={RolePage} />
                                 <Route path='/home/soal' component={SoalPage} />
                                 <Route path='/home/rancangan' component={RancanganPage} />
-                                <Route path='/home/example' component={UjianPage} />
                                 <Route path='/home/parameters' component={ParamPage} />
-                                <Route path='/home/exam' component={ExamPage} />                                
+                                <Route path='/home/schedule' component={SchedulePage} />                                
                             </Switch>             
                         </Suspense>
                     </Grid>

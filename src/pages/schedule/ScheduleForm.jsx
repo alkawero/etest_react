@@ -5,7 +5,7 @@ import Grid from '@material-ui/core/Grid';
 import { useUpdateEffect } from 'react-use';
 import clsx from 'clsx';
 import { doUpload, doPost, doGet, doPut } from 'apis/api-service';
-import useStyles, { selectCustomZindex } from './examStyle'
+import useStyles, { selectCustomZindex } from './scheduleStyle'
 import { useCommonStyles } from 'themes/commonStyle'
 import Button from '@material-ui/core/Button';
 import DateFnsUtils from '@date-io/date-fns';
@@ -58,7 +58,7 @@ import IconButton from '@material-ui/core/IconButton';
 
 
 
-const ExamForm = ({ create, update, onClose, exam, action, open }) => {
+const ScheduleForm = ({ create, update, onClose, exam, action, open }) => {
 
     const classes = useStyles()
     const common = useCommonStyles()
@@ -672,5 +672,5 @@ const ExamForm = ({ create, update, onClose, exam, action, open }) => {
     );
 }
 
-export default ExamForm;
+export default ScheduleForm;
 
