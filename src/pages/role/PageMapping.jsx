@@ -99,7 +99,7 @@ const PageMapping = ({selectedRoleId,refresh}) => {
             {pages.map(page=>(
                 <Grid key={page.id} justify='space-between' alignItems='center' container className={classes.pageRow}>
                     <Grid item >
-                        <Chip label={page.navigation} />
+                        <Chip label={page.tittle} />
                     </Grid>
                     <Grid item >
                         <Chip label={page.path} />

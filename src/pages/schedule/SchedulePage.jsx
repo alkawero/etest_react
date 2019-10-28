@@ -11,17 +11,19 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
+
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import IconButton from '@material-ui/core/IconButton';
 import Search from '@material-ui/icons/Search';
+import Print from '@material-ui/icons/Print';
 import ArrowForward from '@material-ui/icons/ArrowForward';
 import TopDrawer from 'components/TopDrawer';
 import ScheduleForm from './ScheduleForm';
 import Select from 'react-select';
+import Tooltip from "@material-ui/core/Tooltip";
 
-import { doGet, doPost, doDelete, doPut, doPatch } from 'apis/api-service';
+import { doGet, doPost, doDelete, doPut, doPatch, doDownloadPdf } from 'apis/api-service';
 import Protected from 'components/Protected';
 import clsx from 'clsx';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
@@ -35,7 +37,9 @@ import RefreshButton from 'components/RefreshButton';
 import DetailButton from 'components/DetailButton';
 import PopUp from 'components/PopUp';
 import { UserProvider } from 'contexts/UserContext';
-import FlexibleFilter from 'components/FlexibleFilter';
+//import TableCell  from 'components/TableCell'; 
+import TableCell from "@material-ui/core/TableCell";
+import InlineText from '../../components/InlineText';
 
 
 
@@ -233,6 +237,12 @@ const SchedulePage = (props) => {
         getExam()
     }
 
+    const printExamCard = (exam) => {
+        const params={exam_id:exam.id}
+        doDownloadPdf('exam/users/print',params);
+    }
+    
+
     const currentAccess = props.ui.active_page.access
 
     return (
@@ -258,7 +268,6 @@ const SchedulePage = (props) => {
             </Grid>
             <Grid container justify='center' className={classes.content_wrapper}>
                 <Grid container className={classes.content}>
-
                     <Grid item xs={12} container className={clsx(classes.table_wrapper, common.borderTopRadius)}>
                         <Table className={classes.table}>
                             <TableHead>
@@ -286,22 +295,34 @@ const SchedulePage = (props) => {
                                                     <DetailButton tooltip='detail' action={() => detail(row)} classes={classes.floatButton} />
                                                 </Protected>
                                                 <Protected current={currentAccess} only='W'>
+                                                <Tooltip title='print exam card'>
+                                                <IconButton onClick={()=>printExamCard(row)} className={classes.arrowButton} size="medium">
+                                                    <Print fontSize="small"/>
+                                                </IconButton>
+                                                </Tooltip>
                                                     <SwitchButton tooltip='change status' action={() => toggle(row)} checked={row.status === 1 || row.status === true} />
-                                                </Protected>
-                                                <Protected current={currentAccess} only='W'>
                                                     <EditButton tooltip='edit' action={() => edit(row)} classes={classes.floatButton} />
                                                 </Protected>
                                                 <Protected current={currentAccess} only='D'>
                                                     <DeleteButton tooltip='delete' action={() => deleteById(row)} classes={classes.floatButton} />
                                                 </Protected>
+                                                
                                             </div>
                                             {row.exam_type.char_code}
                                         </TableCell>
                                         <TableCell >{row.subject_name}</TableCell>
                                         <TableCell>{row.jenjang}</TableCell>
                                         <TableCell>{row.grade_num}</TableCell>
-                                        <TableCell>{row.tahun_ajaran_char}</TableCell>
-                                        <TableCell>{row.schedule_date}</TableCell>
+                                        <TableCell>
+                                        <InlineText>
+                                        {row.tahun_ajaran_char}
+                                        </InlineText>
+                                        </TableCell>                                        
+                                        <TableCell>
+                                        <InlineText>
+                                        {row.schedule_date}
+                                        </InlineText>
+                                        </TableCell>
                                         <TableCell>{row.start_time.substring(11, 16)}</TableCell>
                                         <TableCell>{row.end_time.substring(11, 16)}</TableCell>
                                         <TableCell>{row.duration}</TableCell>

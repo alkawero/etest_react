@@ -7,7 +7,6 @@ const useStyles = makeStyles(theme => ({
     content:{
         borderRadius:6,
         backgroundColor:'white', 
-        minHeight:600, 
         margin:24,
         
     },

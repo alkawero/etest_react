@@ -54,9 +54,28 @@ export const useCommonStyles = makeStyles(theme => ({
     },
     backgroundColorHijau:{
         backgroundColor:'#15cd8f'
-    }
+    },
     
+    success:{
+        backgroundColor:'#15cd8f'
+    }
     
         
     
   }));
+
+  export const selectCustomZindex = {
+    control: (base, state) => ({
+        ...base,
+        minWidth: '150px',
+        margin: '0 4px',
+
+    }),
+    container: (base, state) => {
+        return ({
+            ...base,
+            flex: 1,
+            zIndex: state.isFocused ? "1100" : "1"  //Only when current state focused
+        })
+    }
+};

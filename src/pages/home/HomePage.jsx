@@ -24,6 +24,7 @@ import FullMenu from './FullMenu';
 import PopUp  from 'components/PopUp';
 import Button  from '@material-ui/core/Button';
 import Chip from '@material-ui/core/Chip';
+import Tooltip from '@material-ui/core/Tooltip';
  
 const Page =  lazy(() => import('pages/page/Page'))
 const RolePage =  lazy(() => import('pages/role/RolePage'))
@@ -32,6 +33,10 @@ const SoalPage =  lazy(() => import('pages/soal/SoalPage'))
 const ParamPage =  lazy(() => import('pages/parameter/ParamPage'))
 const SchedulePage =  lazy(() => import('pages/schedule/SchedulePage'))
 const Dashboard =  lazy(() => import('pages/dashboard/Dashboard'))
+const ReviewerPage =  lazy(() => import('pages/reviewer/ReviewerPage'))
+const MathPage =  lazy(() => import('pages/math/MathPage'))
+
+
 
 
 
@@ -122,7 +127,11 @@ const HomePage = (props) => {
                                 <Route path='/home/soal' component={SoalPage} />
                                 <Route path='/home/rancangan' component={RancanganPage} />
                                 <Route path='/home/parameters' component={ParamPage} />
-                                <Route path='/home/schedule' component={SchedulePage} />                                
+                                <Route path='/home/schedule' component={SchedulePage} />  
+                                <Route path='/home/reviewer' component={ReviewerPage} /> 
+                                <Route path='/home/math' component={MathPage} /> 
+                                
+                                                              
                             </Switch>             
                         </Suspense>
                     </Grid>
@@ -147,7 +156,9 @@ const HomePage = (props) => {
                         <Grid container justify='center'>
                         {
                             user.roles.map(role=>(
-                                <Chip key={role.id} label={role.code} />
+                                <Tooltip key={role.id} title={role.desc}>
+                                <Chip label={role.code} />
+                                </Tooltip>
                             ))
                         }
                         </Grid>

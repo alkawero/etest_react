@@ -76,11 +76,11 @@ const useStyles = makeStyles(theme => ({
         marginLeft: ({dimension})=>{
                         if(dimension){
                             if(dimension.xl===true){
-                            return -300
+                            return -50
                             }else if(dimension.md===true){
-                                return -200
+                                return -80
                             }else{
-                                return -150
+                                return -120
                             }                         
                         }return 0
                     },

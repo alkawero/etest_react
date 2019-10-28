@@ -65,10 +65,10 @@ const useStyles = makeStyles(theme => ({
         marginLeft: ({dimension})=>{
                         if(dimension){
                             if(dimension.xl===true){
-                                return 1000
+                                return 950
                             }
                             else if(dimension.lg===true){
-                                return 800
+                                return 750
                             }else if(dimension.md===true){
                                 return 600
                             }else{
@@ -137,8 +137,7 @@ const useStyles = makeStyles(theme => ({
         width:'100%',
         maxHeight:600,
         minHeight:200,
-        overflow:'auto',
-        marginBottom:20        
+        overflow:'auto',      
     },
     hoverable:{
         '&:hover':{           
@@ -152,6 +151,10 @@ const useStyles = makeStyles(theme => ({
     table_header:{
         backgroundColor:'#f5f5f5',        
     },
+    chatList:{
+        maxHeight:'50vh',
+        overflowY:'auto'
+    }
     
     
     

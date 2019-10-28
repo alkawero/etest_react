@@ -7,7 +7,6 @@ const useStyles = makeStyles(theme => ({
     content:{
         borderRadius:6,
         backgroundColor:'white', 
-        minHeight:600, 
         margin:24,
         
     },
@@ -76,11 +75,11 @@ const useStyles = makeStyles(theme => ({
         marginLeft: ({dimension})=>{
                         if(dimension){
                             if(dimension.xl===true){
-                            return -300
+                            return -150
                             }else if(dimension.md===true){
-                                return -200
+                                return -80
                             }else{
-                                return -150
+                                return -120
                             }                         
                         }return 0
                     },

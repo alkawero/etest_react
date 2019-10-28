@@ -56,6 +56,23 @@ export const doPost = async(path,payload,activity) =>{
       })
 }
 
+export const doSilentPost = async(path,payload) =>{
+  store.dispatch(loading(true))  
+  return await axios({
+        method: 'post',
+        url: api_host+path,
+        data: payload
+      })
+      .then((rsp)=>{
+        store.dispatch(loading(false))
+        return {data:rsp.data}})
+      .catch((error)=>{
+        store.dispatch(loading(false))
+        store.dispatch(showSnackbar('error','posting error'))
+        console.log(error)
+      })
+}
+
 
 export const doUpload = async(path,payload) =>{
   return await axios({
@@ -64,7 +81,8 @@ export const doUpload = async(path,payload) =>{
         data: payload,
         headers:{'content-type': 'multipart/form-data' }
       })
-      .then((rsp)=>{        
+      .then((rsp)=>{  
+        store.dispatch(showSnackbar('success','upload to server success'))      
         return rsp
       })
       .catch((error)=>{
@@ -125,4 +143,28 @@ export const doDelete = async(path,payload,activity) =>{
         store.dispatch(showSnackbar('error',activity+' error'))
         console.log(error)
       })
+}
+
+export const doDownloadPdf = async(path,params={}) =>{
+  store.dispatch(loading(true))
+  return await axios.get(api_host+path,{
+    params:params,
+    responseType: 'blob'
+  })
+      .then((rsp)=>{         
+        store.dispatch(loading(false))
+        const url = window.URL.createObjectURL(new Blob([rsp.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'file.pdf'); //or any other extension
+        document.body.appendChild(link);
+        link.click();      
+        })
+      .catch((error)=>{
+        console.log(path)
+        console.log(error)
+        store.dispatch(loading(false))
+        store.dispatch(showSnackbar('error','ups something wrong, let IT team fix this'))
+        return {error:error}
+        });  
 }

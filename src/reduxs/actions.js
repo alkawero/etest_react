@@ -48,12 +48,20 @@ export function setTahunPelajaran(tahun){
     return{type:'setTahunPelajaran',payload:tahun}
 }
 
+export function getExamsData(exam){
+    return{type:'getExamsData',payload:exam}
+}
+
 export function setExamsData(exam){
     return{type:'setExamsData',payload:exam}
 }
 
 export function setExamStatus(status){
     return{type:'setExamStatus',payload:status}
+}
+
+export function setGlobalError(message){
+    return{type:'setGlobalError',payload:message}
 }
 
 

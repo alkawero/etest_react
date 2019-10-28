@@ -1,5 +1,5 @@
 import { makeStyles } from '@material-ui/styles';
-import { green } from '@material-ui/core/colors';
+
 
 const useStyles = makeStyles(theme => ({    
     content_wrapper:{
@@ -61,7 +61,7 @@ const useStyles = makeStyles(theme => ({
         display:'none',
         position:'absolute',        
         justifyContent:'flex-start',
-        marginTop: -8,
+        marginTop: -10,
         marginLeft: ({dimension})=>{
                         if(dimension){
                             if(dimension.xl===true){
@@ -135,10 +135,9 @@ const useStyles = makeStyles(theme => ({
     },
     table_wrapper:{
         width:'100%',
-        maxHeight:600,
         minHeight:200,
-        overflow:'auto',
-        marginBottom:20        
+        overflowX:'auto',
+        overflowY:'hidden',            
     },
     hoverable:{
         '&:hover':{           
@@ -152,6 +151,7 @@ const useStyles = makeStyles(theme => ({
     table_header:{
         backgroundColor:'#f5f5f5',        
     },
+    
     
     
     

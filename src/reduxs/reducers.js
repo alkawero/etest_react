@@ -8,7 +8,8 @@ const initial  = {
         snack_show:false,
         snack_txt:'',
         snack_var:'info',
-        loading:false        
+        loading:false,
+        error:''        
     },
     role_access_map:[],
     exam:{
@@ -30,6 +31,13 @@ export default function appReducer(prev=initial,action){
         case 'logout':
         return produce(prev, state =>{
             state.user= null
+            state.ui={
+                snack_show:false,
+                snack_txt:'',
+                snack_var:'info',
+                loading:false,
+                error:''        
+            }
         })
         
         case 'showSnackbar':
@@ -81,6 +89,13 @@ export default function appReducer(prev=initial,action){
             state.exam= {
                 ...state.exam,
                 exam_status:action.payload}
+        })
+        
+        case 'setGlobalError':
+        return produce(prev, state =>{
+            state.ui= {
+                ...state.ui,
+                error:action.payload}
         })
 
         default:

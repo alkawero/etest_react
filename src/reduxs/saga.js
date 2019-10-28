@@ -1,9 +1,9 @@
 /*
 author alka@2019
 */
-import {setUserLogin,setTahunPelajaran} from './actions'
+import {setUserLogin,setTahunPelajaran,setExamsData,setExamStatus,setGlobalError} from './actions'
 import {call, put, takeEvery,takeLatest,all} from 'redux-saga/effects'
-import {doGet,doPost} from 'apis/api-service'
+import {doGet,doPost,doSilentPost} from 'apis/api-service'
 import {doGetDummy} from 'tests/api-dummy'
 
 let api = process.env.REACT_APP_BACKEND_MODE ==='DEV' ?  process.env.REACT_APP_DEV_API : process.env.REACT_APP_LOCAL_API
@@ -13,15 +13,27 @@ export const api_url = api+'/api/'
 export function* rootSaga(){
 yield all([
     takeEvery('login',login),
+    takeEvery('getExamsData',getExamsData),
     ])
 }
 
-export function* login(action){
-    
+export function* login(action){    
     try {
-        const user = yield doGet('user/'+action.payload.username)
-        yield put(setUserLogin(user.data));
-        yield getTahunPelajaran()
+        let response = null
+        if(action.payload.role && action.payload.role==='student'){
+            response  = yield doGet('user/student/',action.payload)            
+        }else{
+            //const user = yield doGet('user/'+action.payload.username)
+            response = yield doSilentPost('loginx',action.payload)            
+        }
+        if(!response.data.error){
+            yield put(setGlobalError(''));
+            yield put(setUserLogin(response.data));
+            yield getTahunPelajaran()
+        }else{
+            yield put(setGlobalError(response.data.error));
+        }
+        
     } catch (e) {
         console.log(e)
     }
@@ -32,6 +44,16 @@ export function* getTahunPelajaran(){
     try {
         const response = yield doGet('param',params)
         yield put(setTahunPelajaran(response.data));
+    } catch (e) {
+        console.log(e)
+    }
+}
+
+export function* getExamsData(action){   
+    try {        
+        const response = yield doGet('exam/detail/'+action.payload.id)
+        yield put(setExamsData(response.data))
+        yield put(setExamStatus('start'))
     } catch (e) {
         console.log(e)
     }

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useContext } from "react";
+import React, { useRef,useState, useEffect, useContext } from "react";
 import { isEmpty } from "lodash";
 import Grid from "@material-ui/core/Grid";
 import { useUpdateEffect } from "react-use";
@@ -9,7 +9,8 @@ import { useCommonStyles } from "themes/commonStyle";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
-import { Editor } from "react-draft-wysiwyg";
+//import { Editor } from "react-draft-wysiwyg";
+import Editor from 'draft-js-plugins-editor'
 import {
   EditorState,
   convertFromHTML,
@@ -40,73 +41,49 @@ import { UserContext } from "contexts/UserContext";
 import { default as RSelect } from "react-select";
 import MultipleSelect from "components/MultipleSelect";
 import MultipleSelectCheckBox from "components/MultipleSelectCheckBox";
-import { useDropzone } from "react-dropzone";
-import ReactAudioPlayer from "react-audio-player";
-import { Typography } from "@material-ui/core";
-import ApproveButton from "../../components/ApproveButton";
-import CancelButton from "../../components/CancelButton";
+import createMathjaxPlugin from 'draft-js-mathjax-plugin'
+import editorStyles from './editorStyle.css';
 
 const SoalForm = ({ create, update, onClose, soal, action, open }) => {
   const classes = useStyles();
   const common = useCommonStyles();
-
+  const contentRef = useRef(null);
   const user = useContext(UserContext);
 
-  const [audio, setAudio] = useState(null);
-  const uploadAudio = async () => {
-    let formData = new FormData();
-    formData.append("audio", audio);
-    const url = await doUpload("audios/up", formData);
-    setContent(url.data.link);
-    setAudio(null);
-  };
-
-  const changeAudio = () => {
-    setAudio(null);
-    setContent("");
-  };
+  const mathjaxPlugin = createMathjaxPlugin(/* optional configuration object */)
+  const plugins = [
+    mathjaxPlugin,
+  ]
 
   const [errorState, setErrorState] = useState({});
-  const [content, setContent] = useState("");
   const [plainContent, setPlainContent] = useState("");
   const plainContentChange = e => {
     if (action === "edit" || action === "create")
       setPlainContent(e.target.value);
   };
   const [mathContent, setMathContent] = useState("");
-  const mathContentChange = content => {
-    if (action === "edit" || action === "create") {
-      setMathContent(content);
-    }
-  };
   const [plainQuestion, setPlainQuestion] = useState("");
   const plainQuestionChange = e => {
     if (action === "edit" || action === "create")
       setPlainQuestion(e.target.value);
   };
   const [mathQuestion, setMathQuestion] = useState("");
-
-  const [dataMathFormula, setDataMathFormula] = useState("");
-  const getDataMathFormula = async params => {
-    const response = await doGet("math");
-    setDataMathFormula(response.data);
-  };
-
   const [active, setActive] = useState(true);
   const [status, setStatus] = useState(true);
   const [mediaUrl, setMediaUrl] = useState("");
 
   const [answers, setAnswers] = useState([]);
   const addAnswers = answer => {
-    let exist = answers.filter(
-      a => a.code === answer.code || a.content === answer.content
-    ).length;
-    if (exist < 1) {
-      setAnswers([...answers, answer]);
-      setAnswerFormAnchor(null);
-    } else {
-      return false;
-    }
+      let exist = answers.filter(
+        a => a.code === answer.code || a.content === answer.content
+      ).length;
+      if (exist < 1) {
+        setAnswers([...answers, answer]);
+        setAnswerFormAnchor(null);
+      } else {
+        return false;
+      }
+    
   };
 
   const deleteAnswer = deleted => {
@@ -122,7 +99,7 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
   const [answerFormAnchor, setAnswerFormAnchor] = useState(null);
   const showAnswerForm = event => {
     if (action === "edit" || action === "create")
-      setAnswerFormAnchor(answerFormAnchor ? null : event.currentTarget);
+    setAnswerFormAnchor(answerFormAnchor ? null : event.currentTarget);
   };
 
   const [rightAnswer, setRightAnswer] = useState("");
@@ -179,7 +156,7 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
     if (action === "edit" || action === "create") setSubject(e);
   };
   const getDataSubject = async () => {
-    const params = { jenjang: jenjang.value, grade: grade.value };
+    const params  = { jenjang: jenjang.value, grade: grade.value };
     const response = await doGet("mapel", params);
     setDataSubject(
       response.data.map(data => ({ label: data.name, value: data.id }))
@@ -277,7 +254,7 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
     setDataJenjang(
       response.data.map(j => ({ label: j.value, value: j.char_code }))
     );
-  }; //
+  };//
 
   const [dataGrade, setDataGrade] = useState([]);
   const [grade, setGrade] = useState(null);
@@ -317,7 +294,6 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
     getDataJenjang();
     getDataLevel();
     getDataContentTypes();
-    getDataMathFormula();
   }, []);
 
   useEffect(() => {
@@ -367,7 +343,6 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
       setLevel({ label: soal.level.value, value: soal.level.num_code });
       setSource(soal.source);
       setAnswerType(soal.answer_type);
-
       if (soal.answer_type === "M") {
         setAnswers(
           soal.options.map(op => ({
@@ -390,12 +365,8 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
         );
 
         setContentEditor(EditorState.createWithContent(state));
-      } 
-      else if(soal.content_type===3) {
+      } else {
         setMathContent(soal.content);
-      } 
-      else if(soal.content_type===5){
-        setContent(soal.content);
       }
 
       setQuestionType(soal.question_type);
@@ -497,27 +468,14 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
     onClose();
   };
 
-  const uploadImageCallBack = img => {
+  const uploadImageCallBack = file => {
     const formData = new FormData();
-    formData.append("img", img);
+    formData.append("img", file);
     return doUpload("images/up", formData);
   };
 
-  const onDrop = useCallback(files => {
-    setAudio(files[0]);
-    let reader = new FileReader();
-
-    reader.onloadend = () => {
-      setContent(reader.result);
-    };
-
-    reader.readAsDataURL(files[0]);
-  }, []);
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
-
   const submit = () => {
-    let contentx = "";
+    let content = "";
     let question = "";
     let errors = {};
 
@@ -562,15 +520,13 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
     }
 
     if (contentType === 1) {
-      contentx = plainContent;
+      content = plainContent;
     } else if (contentType === 2) {
       if (contentEditor.getCurrentContent().hasText())
-      contentx = stateToHTML(contentEditor.getCurrentContent());
+        content = stateToHTML(contentEditor.getCurrentContent());
     } else if (contentType === 3) {
-      contentx = mathContent;
-    } else if (contentType === 5) {
-      contentx = content;
-    } 
+      content = mathContent;
+    }
 
     if (questionType === 1) {
       question = plainQuestion;
@@ -581,7 +537,7 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
       question = mathQuestion;
     }
 
-    if (contentx === "") {
+    if (content === "") {
       errors = { ...errors, econtent: "please fill the content" };
     }
 
@@ -608,7 +564,7 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
         content_type: contentType,
         question_type: questionType,
         status: status,
-        content: contentx,
+        content: content,
         question: question,
         right_answer: rightAnswer,
         media_url: mediaUrl,
@@ -629,7 +585,6 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
   };
 
   const clear = () => {
-    setContent('');
     setExternal(0);
     setJenjang(null);
     setGrade(null);
@@ -817,54 +772,24 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
               />
             </Conditional>
             <Conditional condition={contentType === 2}>
+            <div className={editorStyles.editor}>
               <Editor
                 editorState={contentEditor}
-                onEditorStateChange={contentEditorChange}
-                toolbar={{
-                  image: {
-                    uploadCallback: uploadImageCallBack,
-                    previewImage: true
-                  }
-                }}
+                onChange={contentEditorChange}
+                plugins={plugins}
+                style={{width:300}}
+                ref={(element) => { contentRef.current = element }}
               />
-            </Conditional>
+            </div>
+            </Conditional>                 
+
             <Conditional condition={contentType === 3}>
               <MathInput
                 value={mathContent}
                 type="asciimath"
-                action={mathContentChange}
-                formulas={dataMathFormula}
+                action={setMathContent}
               />
               <MathDisplay value={mathContent} />
-            </Conditional>
-            <Conditional condition={contentType === 5}>
-              <Grid
-                container
-                justify="center"
-                alignItems="center"
-                className={common.margin}
-              >
-                <Conditional condition={content === ""}>
-                  <div {...getRootProps()}>
-                    <input {...getInputProps()} />
-                    <Typography variant="h5">
-                      Click or Drag 'n' drop file here
-                    </Typography>
-                  </div>
-                </Conditional>
-                <Conditional condition={content !== ""}>
-                  <ReactAudioPlayer controlsList="nodownload" style={{flex:'1'}} src={content} controls />
-                  <Conditional condition={action !== "detail"}>
-                    <CancelButton action={changeAudio} tooltip="change audio" />
-                    <Conditional condition={audio !== null}>
-                      <ApproveButton
-                        action={uploadAudio}
-                        tooltip="upload audio"
-                      />
-                    </Conditional>
-                  </Conditional>
-                </Conditional>
-              </Grid>
             </Conditional>
           </Grid>
         </Grid>
@@ -921,21 +846,16 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
             <Conditional condition={questionType === 2}>
               <Editor
                 editorState={questionEditor}
-                onEditorStateChange={questionEditorChange}
-                toolbar={{
-                  image: {
-                    uploadCallback: uploadImageCallBack,
-                    previewImage: true
-                  }
-                }}
+                onChange={contentEditorChange}
               />
             </Conditional>
+
+            
             <Conditional condition={questionType === 3}>
               <MathInput
                 value={mathQuestion}
                 type="asciimath"
                 action={setMathQuestion}
-                formulas={dataMathFormula}
               />
               <MathDisplay value={mathQuestion} />
             </Conditional>
@@ -1017,14 +937,8 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
                     <Conditional condition={answer.contentType === 1}>
                       {answer.content}
                     </Conditional>
-                    <Conditional condition={answer.contentType === 3}>
+                    <Conditional condition={answer.contentType === 2}>
                       <MathDisplay value={answer.content} />
-                    </Conditional>
-                    <Conditional condition={answer.contentType === 4}>
-                      <img
-                        className={classes.imageOption}
-                        src={answer.content}
-                      />
                     </Conditional>
                   </Grid>
                   <Grid item xs={1} container alignItems="center">
@@ -1080,7 +994,6 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
           cancel={() => {
             setAnswerFormAnchor(null);
           }}
-          formulas={dataMathFormula}
         />
       </PopUp>
     </>

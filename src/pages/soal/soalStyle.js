@@ -61,7 +61,6 @@ const useStyles = makeStyles(theme => ({
         display:'none',
         position:'absolute',        
         justifyContent:'flex-start',
-        marginTop: -8,
         marginLeft: ({dimension})=>{
                         if(dimension){
                             if(dimension.xl===true){
@@ -81,7 +80,7 @@ const useStyles = makeStyles(theme => ({
         
         
     },
-    tableRow:{
+    tableRow:{        
         '&:hover':{
             '& .actionWrapper':{
                 display:'flex',
@@ -125,7 +124,7 @@ const useStyles = makeStyles(theme => ({
         padding:8
     },
     answerFormContainer:{
-        width:500
+        width:700
     },
     fullWidth:{
         width:'98%'
@@ -150,6 +149,12 @@ const useStyles = makeStyles(theme => ({
     table_header:{
         backgroundColor:'#f5f5f5',        
     },
+    imageOption: {
+        border: '1px solid #ddd',
+        borderRadius: 4,
+        padding: 5,
+        width: 200
+      }
     
     
     
@@ -181,3 +186,5 @@ export const selectCustomZindex = {
         })
     }
 };
+
+
