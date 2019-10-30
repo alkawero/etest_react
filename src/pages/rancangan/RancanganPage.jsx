@@ -2,12 +2,10 @@
 author alka@2019
 */
 import React, { useState, useEffect } from "react";
-import { connect } from "react-redux";
 import useStyles, { selectCustomSize } from "./rancanganStyle";
 import { useUpdateEffect } from "react-use";
 import { useCommonStyles } from "themes/commonStyle";
 import Grid from "@material-ui/core/Grid";
-import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
@@ -27,9 +25,7 @@ import { doGet, doPost, doDelete, doPut, doPatch } from "apis/api-service";
 import Protected from "components/Protected";
 import clsx from "clsx";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
-import StatusChip from "components/StatusChip";
 import TablePagination from "@material-ui/core/TablePagination";
-import SwitchButton from "components/SwitchButton";
 import EditButton from "components/EditButton";
 import DeleteButton from "components/DeleteButton";
 import AddButton from "components/AddButton";
@@ -39,7 +35,6 @@ import RefreshButton from "components/RefreshButton";
 import DetailButton from "components/DetailButton";
 import PopUp from "components/PopUp";
 import { UserProvider } from "contexts/UserContext";
-import FlexibleFilter from "components/FlexibleFilter";
 import Tooltip  from "@material-ui/core/Tooltip";
 import { useSelector } from "react-redux";
 

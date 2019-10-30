@@ -14,8 +14,8 @@ import format from "date-fns/format";
 import parse from "date-fns/parse";
 import {
   MuiPickersUtilsProvider,
-  KeyboardTimePicker,
-  KeyboardDatePicker
+  TimePicker,
+  DatePicker
 } from "@material-ui/pickers";
 import TextField from "@material-ui/core/TextField";
 
@@ -573,9 +573,10 @@ const ScheduleForm = ({ create, update, onClose, exam, action, open }) => {
 
           <Grid container>
             <MuiPickersUtilsProvider utils={DateFnsUtils}>
-              <KeyboardDatePicker
+              <DatePicker
                 disableToolbar
-                variant="inline"
+                variant='inline'                
+                autoOk
                 format="dd/MM/yyyy"
                 margin="normal"
                 id="schedule-date"
@@ -587,8 +588,9 @@ const ScheduleForm = ({ create, update, onClose, exam, action, open }) => {
                 }}
               />
 
-              <KeyboardTimePicker
+              <TimePicker
                 margin="normal"
+                variant='inline'                
                 id="schedule-time-start"
                 label="schedule time start"
                 value={scheduleTimeStart}
@@ -598,8 +600,9 @@ const ScheduleForm = ({ create, update, onClose, exam, action, open }) => {
                 }}
               />
 
-              <KeyboardTimePicker
+              <TimePicker
                 margin="normal"
+                variant='inline'                
                 id="schedule-time-end"
                 label="schedule time end"
                 value={scheduleTimeEnd}

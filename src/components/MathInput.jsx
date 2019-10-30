@@ -71,7 +71,7 @@ const MathInput = ({ value, action, formulas }) => {
           </Grid>
           <Grid container justify="center">
             <FormControl component="fieldset" className={classes.formControl}>
-              <FormLabel component="legend">Answer Type</FormLabel>
+              <FormLabel component="legend">Format</FormLabel>
               <RadioGroup
                 aria-label="format"
                 name="format"

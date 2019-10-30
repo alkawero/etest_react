@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useInterval, useUpdateEffect } from "react-use";
-import { setExamStatus, getExamsData, setActivePage } from "reduxs/actions";
+import { getExamsData, setActivePage } from "reduxs/actions";
 import { withRouter } from "react-router";
-import { doGet, doPost, doDelete, doPut, doPatch } from "apis/api-service";
+import { doGet,doPatch } from "apis/api-service";
 import useStyles from "./dashboardStyle";
 import { useCommonStyles } from "themes/commonStyle";
 import clsx from "clsx";
 import Grid from "@material-ui/core/Grid";
 import Card from "@material-ui/core/Card";
-import CardActions from "@material-ui/core/CardActions";
 import CardContent from "@material-ui/core/CardContent";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
@@ -26,9 +25,8 @@ import Conditional from "components/Conditional";
 import Protected from "components/Protected";
 import formatDistance from "date-fns/formatDistance";
 import {
-  MuiPickersUtilsProvider,
-  KeyboardTimePicker,
-  KeyboardDatePicker
+  MuiPickersUtilsProvider,  
+  KeyboardDatePicker,DatePicker
 } from "@material-ui/pickers";
 import DateFnsUtils from "@date-io/date-fns";
 import { useDispatch, useSelector } from "react-redux";
@@ -44,9 +42,13 @@ const Dashboard = props => {
   const [examData, setExamData] = useState([]);
   const [exam, setExam] = useState(null);
 
-  const [examDate, setExamDate] = useState(null);
-  const examDateChange = e => {
-    setExamDate(e);
+  const [filterStartDate, setFilterStartDate] = useState(null);
+  const [filterEndDate, setFilterEndDate] = useState(null);
+  const filterStartDateChange = e => {
+    setFilterStartDate(e);
+  };
+  const filterEndDateChange = e => {
+    setFilterEndDate(e);
   };
   const [dataExamActivity, setDataExamActivity] = useState([]);
   const [examActivity, setExamActivity] = useState(null);
@@ -76,16 +78,29 @@ const Dashboard = props => {
 
   useUpdateEffect(() => {
     getExam();
-  }, [examActivity, examDate]);
+  }, [examActivity, filterStartDate,filterEndDate]);
 
   const getExam = async () => {
-    let params = {};
+    const roles = user.roles.map(r=>(r.id))
+    let params = {
+      user_role:JSON.stringify(roles),
+      user_id:user.id
+    };
+
+    if (roles.includes(1)) {//if student
+      params = { ...params, exam_account_num: user.name };
+    }
+
     if (examActivity != null) {
       params = { ...params, activity: examActivity.value };
     }
-    if (examDate != null && !isNaN(examDate)) {
-      params = { ...params, schedule_date: format(examDate, "yyyy/MM/dd") };
+    if (filterStartDate != null && !isNaN(filterStartDate)) {
+      params = { ...params, start_date: format(filterStartDate, "yyyy/MM/dd") };
     }
+
+    if (filterEndDate != null && !isNaN(filterEndDate)) {
+      params = { ...params, end_date: format(filterEndDate, "yyyy/MM/dd") };
+    }    
 
     const response = await doGet("exam", params);
     if (!response.error) {
@@ -144,17 +159,36 @@ const Dashboard = props => {
           </Grid>
           <Grid>
             <MuiPickersUtilsProvider utils={DateFnsUtils}>
-              <KeyboardDatePicker
+              <DatePicker
                 disableToolbar
-                variant="inline"
+                clearable
+                autoOk
                 format="dd/MM/yyyy"
                 margin="normal"
-                id="schedule-date"
-                label="exam date"
-                value={examDate}
-                onChange={examDateChange}
+                id="filter-start-date"
+                label="filter start date"
+                value={filterStartDate}
+                onChange={filterStartDateChange}
                 KeyboardButtonProps={{
-                  "aria-label": "change date"
+                  "aria-label": "filter start date"
+                }}
+              />
+            </MuiPickersUtilsProvider>
+          </Grid>
+          <Grid>
+            <MuiPickersUtilsProvider utils={DateFnsUtils}>
+              <DatePicker
+                disableToolbar                
+                clearable
+                autoOk
+                format="dd/MM/yyyy"
+                margin="normal"
+                id="filter-end-date"
+                label="filter end date"
+                value={filterEndDate}
+                onChange={filterEndDateChange}
+                KeyboardButtonProps={{
+                  "aria-label": "filter end date"
                 }}
               />
             </MuiPickersUtilsProvider>

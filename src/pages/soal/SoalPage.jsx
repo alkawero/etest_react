@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { connect } from "react-redux";
 import useStyles, { selectCustomSize } from "./soalStyle";
 import { useUpdateEffect } from "react-use";
 import { useCommonStyles } from "themes/commonStyle";
 import Grid from "@material-ui/core/Grid";
-import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
@@ -32,7 +30,6 @@ import RefreshButton from "components/RefreshButton";
 import DetailButton from "components/DetailButton";
 import PopUp from "components/PopUp";
 import { UserProvider } from "contexts/UserContext";
-import FlexibleFilter from "components/FlexibleFilter";
 import InlineText from "components/InlineText";
 import { useSelector } from "react-redux";
 
@@ -107,6 +104,7 @@ const SoalPage = props => {
 
   useEffect(() => {
     getSoal();
+    
   }, [refresh, rowsPerHalaman, halaman]);
 
   useUpdateEffect(() => {
@@ -135,7 +133,7 @@ const SoalPage = props => {
       params = { ...params, jenjang: filterJenjang.value };
     }
     if (filterGrade !== null) {
-      params = { ...params, grade: filterGrade.value };
+      params = { ...params, grade_char: filterGrade.value };
     }
     if (filterSubject !== null) {
       params = { ...params, subject: filterSubject.value };

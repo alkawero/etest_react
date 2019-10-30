@@ -847,7 +847,7 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
                 <Conditional condition={content === ""}>
                   <div {...getRootProps()}>
                     <input {...getInputProps()} />
-                    <Typography variant="h5">
+                    <Typography variant="h5" style={{cursor:'pointer', borderRadius:4, backgroundColor:'green', color:'white', padding:16}}>
                       Click or Drag 'n' drop file here
                     </Typography>
                   </div>
@@ -944,7 +944,9 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
 
         <Grid container className={classes.answerTypeWrapper}>
           <FormControl component="fieldset" className={classes.formControl}>
-            <FormLabel component="legend">Answer Type</FormLabel>
+            <FormLabel component="legend">
+            <Chip size="small" label="Answer Type" />
+            </FormLabel>
             <RadioGroup
               aria-label="answer type"
               name="answer type"

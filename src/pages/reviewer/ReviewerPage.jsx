@@ -14,15 +14,12 @@ import IconButton from '@material-ui/core/IconButton';
 import Search from '@material-ui/icons/Search';
 import ArrowForward from '@material-ui/icons/ArrowForward';
 import RightDrawer from 'components/RightDrawer';
-import TopDrawer from 'components/TopDrawer';
 
-import { doGet,doPost,doDelete,doPut,doPatch } from 'apis/api-service';
+import { doGet,doPost,doDelete,doPut } from 'apis/api-service';
 import Protected from 'components/Protected';
 import clsx from 'clsx';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
-import StatusChip from 'components/StatusChip';
 import  TablePagination  from '@material-ui/core/TablePagination';
-import SwitchButton from 'components/SwitchButton';
 import EditButton from 'components/EditButton';
 import DeleteButton from 'components/DeleteButton';
 import AddButton from 'components/AddButton';
@@ -30,18 +27,14 @@ import RefreshButton from 'components/RefreshButton';
 import DetailButton from 'components/DetailButton';
 import PopUp from 'components/PopUp';
 import ReviewerForm from './ReviewerForm';
-import ReviewerDetail from './ReviewerDetail';
 
 
 
 
 const ReviewerPage = (props) => {
     
-    const [openTopDrawer, setOpenTopDrawer] = useState(false)
     const [openRightDrawer, setOpenRightDrawer] = useState(false)
     const [rightDrawerTittle, setRightDrawerTittle] = useState('')
-    const [topDrawerTittle, setTopDrawerTittle] = useState('')
-    const [TopDrawerContent, setTopDrawerContent] = useState(null)
     const [RightDrawerContent, setRightDrawerContent] = useState(null)
     
     const [filterAnchor, setFilterAnchor] = useState(null)
@@ -75,23 +68,14 @@ const ReviewerPage = (props) => {
         
     }
 
-    const getById = async(id)  =>{
-        const response = await doGet('reviewer/'+id)
-        if(!response.error){
-            return response.data
-        }    
-    }
-
+    
     const addButtonClick = ()=>{
         setRightDrawerContent(<ReviewerForm create={create} action='create' onClose={closeRightDrawer}/>)
         setOpenRightDrawer(true)
         setRightDrawerTittle('Add New Reviewer')
     }
             
-    const closeTopDrawer = ()=>{
-        setOpenTopDrawer(false)
-    }
-
+    
     const closeRightDrawer = ()=>{
         setOpenRightDrawer(false)
     }
@@ -105,15 +89,7 @@ const ReviewerPage = (props) => {
         await doPut('subject/reviewer',p,'save Reviewer') 
         setRefresh(refresh+1)              
     }
-
-    const toggle= async(p)=>{
-        const newObject = {
-            ...p,
-            status:p.status===0?1:0
-        }
-        await doPatch('reviewer/toggle',newObject,'save Reviewer') 
-        setRefresh(refresh+1)              
-    }
+   
     
 
     const filterClick= (event)=> {
@@ -226,9 +202,6 @@ const ReviewerPage = (props) => {
                     </Paper>
             </Grid>            
         </Grid>
-        <TopDrawer tittle={topDrawerTittle} open={openTopDrawer} close={closeTopDrawer}>
-            {TopDrawerContent}
-        </TopDrawer>
         <RightDrawer tittle={rightDrawerTittle} open={openRightDrawer} close={closeRightDrawer}>
             {RightDrawerContent}            
         </RightDrawer>

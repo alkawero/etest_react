@@ -10,7 +10,7 @@ import useStyles from "./examStyle";
 import { useCommonStyles } from "themes/commonStyle";
 import Button from "@material-ui/core/Button";
 import { withRouter } from "react-router";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import Typography from "@material-ui/core/Typography";
 import Badge from "@material-ui/core/Badge";
 import addMinutes from "date-fns/addMinutes";
@@ -45,7 +45,13 @@ const ExamPage = props => {
   const minutes = 60;
 
   const [finishTime, setFinishTime] = useState(addMinutes(new Date(), minutes));
-
+  const finish = timeout => {
+    const incompletes = answers.filter(ans => !ans.answered);
+    if (incompletes.length < 1 || timeout === true) {
+      props.history.push("/");
+    }
+    setOpenModal(true);
+  };
   useEffect(() => {
     if (exam.exam_data) {
       const firstSoal = exam.exam_data.rancangan.soals.filter(
@@ -102,13 +108,7 @@ const ExamPage = props => {
     5000
   );
 
-  const finish = timeout => {
-    const incompletes = answers.filter(ans => !ans.answered);
-    if (incompletes.length < 1 || timeout === true) {
-      props.history.push("/");
-    }
-    setOpenModal(true);
-  };
+  
 
   const ForcedFinish = () => {
     setOpenModal(false);
@@ -362,7 +362,7 @@ const ExamPage = props => {
                         <MathDisplay value={option.content} />
                       </Conditional>
                       <Conditional condition={option.content_type === 4}>                      
-                        <img className={c.imageOption} src={option.content}/>
+                        <img alt={option.code} className={c.imageOption} src={option.content}/>
                     </Conditional>
                     </Grid>
                   </Grid>

@@ -1,4 +1,3 @@
-import React from 'react';
 import styled from 'styled-components';
 import {default as  MaterialTableCell} from '@material-ui/core/TableCell';
 

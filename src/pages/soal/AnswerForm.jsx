@@ -2,24 +2,26 @@ import React, { useState, useCallback } from "react";
 import Button from "@material-ui/core/Button";
 import useStyles from "./soalStyle";
 import Grid from "@material-ui/core/Grid";
-import Select from "@material-ui/core/Select";
-import MenuItem from "@material-ui/core/MenuItem";
+import Select from "react-select";
 import Conditional from "components/Conditional";
 import MathInput from "components/MathInput";
 import MathDisplay from "components/MathDisplay";
 import TextField from "@material-ui/core/TextField";
 import { useDropzone } from "react-dropzone";
-import { doUpload} from "apis/api-service";
+import { doUpload } from "apis/api-service";
+import Chip from "@material-ui/core/Chip";
+import Typography from "@material-ui/core/Typography";
+import { selectCustomZindex } from "themes/commonStyle";
 
 const answerContentTypes = [
-  { id: 1, value: "plain text", code: 1 },
-  { id: 3, value: "equation", code: 3 },
-  { id: 4, value: "image", code: 4 }
+  { id: 1, label: "plain text", value: 1 },
+  { id: 3, label: "equation", value: 3 },
+  { id: 4, label: "image", value: 4 }
 ];
 
 const AnswerForm = ({ save, cancel, formulas }) => {
   const classes = useStyles();
-  const [contentType, setContentType] = useState(1);
+  const [contentType, setContentType] = useState(null);
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [plainContent, setPlainContent] = useState("");
@@ -28,7 +30,7 @@ const AnswerForm = ({ save, cancel, formulas }) => {
   const [filePath, setFilePath] = useState("");
 
   const contentTypeChange = e => {
-    setContentType(e.target.value);
+    setContentType(e);
   };
 
   const codeChange = e => {
@@ -53,70 +55,58 @@ const AnswerForm = ({ save, cancel, formulas }) => {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
   const submit = async () => {
-    let error  = '';
+    let error = "";
     let content = null;
-    let url = ''
-    switch (contentType) {
-      case 1:
-        content = plainContent;
-        break;
-      case 3:
-        content = mathContent;
-        break;
-      case 4:
-        content = file;
-        break;
-      default:
-        break;
-    }
-
-    if (contentType!==4) {
-        if(code.trim() == "" || content.trim() == ""){
-            error = "please complete the form"
-        }      
-    }else{
-        if(code.trim() == ""){
-            error = "please complete the form"
-        }else{
-            let formData = new FormData();
-            formData.append('file', file);
-            url = await doUpload('option/image',formData)
-            content = url.data.link
+    let url = "";
+    if(contentType!==null){
+      switch (contentType.value) {
+        case 1:
+          content = plainContent;
+          break;
+        case 3:
+          content = mathContent;
+          break;
+        case 4:
+          content = file;
+          break;
+        default:
+          break;
+      }
+  
+      if (contentType.value !== 4) {
+        if (code.trim() == "" || content.trim() == "") {
+          error = "please complete the form";
         }
-    } 
+      } else {
+        if (code.trim() == "") {
+          error = "please complete the form";
+        } else {
+          let formData = new FormData();
+          formData.append("file", file);
+          url = await doUpload("option/image", formData);
+          content = url.data.link;
+        }
+      }
 
-    if(error !== ""){
+      if (error !== "") {
         setError(error);
-    }else{
+      } else {
         if (
-            save({ code: code, content: content, contentType: contentType }) === false
-          ) {
-            setError("answer code or content already exist");
-          } else {
-            setError("");
-          }
+          save({ code: code, content: content, contentType: contentType.value }) ===
+          false
+        ) {
+          setError("answer code or content already exist");
+        } else {
+          setError("");
+        }
+      }
     }
+    
+
+    
   };
   return (
     <Grid container direction="column" className={classes.answerFormContainer}>
-      <Grid container className={classes.padding}>
-        <Select
-          value={contentType}
-          onChange={contentTypeChange}
-          displayEmpty
-          name="contentType"
-          className={classes.fullWidth}
-          autoWidth={true}
-          variant="outlined"
-        >
-          {answerContentTypes.map(type => (
-            <MenuItem key={type.id} value={type.code}>
-              {type.value}
-            </MenuItem>
-          ))}
-        </Select>
-      </Grid>
-
       <Grid container className={classes.padding}>
         <TextField
           id="code"
@@ -129,9 +119,25 @@ const AnswerForm = ({ save, cancel, formulas }) => {
           placeholder="code"
         />
       </Grid>
+      <Grid
+        container
+        alignItems="center"        
+        className={classes.padding}
+      >  
 
+        <Select
+                value={contentType}
+                onChange={contentTypeChange}
+                name="contentType"
+                options={answerContentTypes}
+                styles={selectCustomZindex}
+                isClearable={true}
+                placeholder={"select content type..."}
+              />          
+        
+      </Grid>
       <Grid container className={classes.padding}>
-        <Conditional condition={contentType === 1}>
+        <Conditional condition={contentType!==null && contentType.value === 1}>
           <TextField
             id="mathInput"
             value={plainContent}
@@ -143,7 +149,7 @@ const AnswerForm = ({ save, cancel, formulas }) => {
             placeholder="text content"
           />
         </Conditional>
-        <Conditional condition={contentType === 3}>
+        <Conditional condition={contentType!==null && contentType.value === 3}>
           <MathInput
             value={mathContent}
             type="asciimath"
@@ -152,15 +158,18 @@ const AnswerForm = ({ save, cancel, formulas }) => {
           />
           <MathDisplay value={mathContent} />
         </Conditional>
-        <Conditional condition={contentType === 4}>
+        <Conditional condition={contentType!==null &&  contentType.value === 4}>
+        <Grid
+        container
+        alignItems="center"        
+        justify='center'
+        className={classes.padding}
+      >
           <div {...getRootProps()}>
             <input {...getInputProps()} />
-            {isDragActive ? (
-              <p>Drop the files here ...</p>
-            ) : (
-              <p>Drag 'n' drop some files here, or click to select files</p>
-            )}
+            <Typography variant='h5' style={{cursor:'pointer', borderRadius:4, backgroundColor:'green', color:'white', padding:16}}>Click or Drag 'n' drop file here</Typography>
           </div>
+          </Grid>
           <Conditional condition={file !== null}>
             <img src={filePath} />
           </Conditional>

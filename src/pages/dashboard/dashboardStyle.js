@@ -6,6 +6,7 @@ const useStyles = makeStyles(theme => ({
     },
     cardWrapper:{
         height:340, 
+        borderRadius:4,
         overflowX:'auto',
         overflowY:'hidden'    
     },

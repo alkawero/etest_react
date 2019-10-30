@@ -1,6 +1,4 @@
-import React,{useState,useEffect,useRef} from 'react'
-import { makeStyles } from '@material-ui/styles';
-import Grid  from '@material-ui/core/Grid';
+import React,{useEffect,useRef} from 'react'
 import loadScript from 'load-script'
 
 const MathDisplay = ({value, type}) => {

@@ -22,7 +22,6 @@ import Protected from 'components/Protected';
 import clsx from 'clsx';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import MathDetail from './MathDetail';
-import StatusChip from 'components/StatusChip';
 import  TablePagination  from '@material-ui/core/TablePagination';
 import SwitchButton from 'components/SwitchButton';
 import EditButton from 'components/EditButton';
@@ -75,13 +74,7 @@ const MathPage = (props) => {
         }
         
     }
-
-    const getMathById = async(mathId)  =>{
-        const response = await doGet('math/'+mathId)
-        if(!response.error){
-            return response.data
-        }    
-    }
+    
 
     const addButtonClick = ()=>{
         setRightDrawerContent(<MathForm create={create} onClose={closeRightDrawer}/>)
@@ -122,13 +115,11 @@ const MathPage = (props) => {
     }
 
     const detail= async(math)=>{
-        //const math = await getMathById(p.id)         
         setTopDrawerContent( <MathDetail math={math} />)
         setOpenTopDrawer(true)
         setTopDrawerTittle('Math Detail')
     }
     const edit= async(math)=>{
-        //const Math = await getMathById(p.id) 
         setRightDrawerContent(<MathForm update={update} math={math} onClose={closeRightDrawer}/>)
         setOpenRightDrawer(true)
         setRightDrawerTittle('Edit Math')
