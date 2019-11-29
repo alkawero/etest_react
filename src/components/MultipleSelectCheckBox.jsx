@@ -4,14 +4,10 @@ import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
-import TextField from "@material-ui/core/TextField";
 import Grid from "@material-ui/core/Grid";
-import AddButton from "./AddButton";
 import PopUp from "./PopUp";
-import Chip from "@material-ui/core/Chip";
 import Tooltip from "@material-ui/core/Tooltip";
 import Conditional from "./Conditional";
-import { select } from "redux-saga/effects";
 import { Checkbox, Button } from "@material-ui/core";
 
 const MultipleSelectCheckBox = ({

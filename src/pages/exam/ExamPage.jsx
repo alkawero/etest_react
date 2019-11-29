@@ -22,9 +22,12 @@ import TextField from "@material-ui/core/TextField";
 import Conditional from "components/Conditional";
 import IconButton from "@material-ui/core/IconButton";
 import Done from "@material-ui/icons/Done";
+import KeyboardArrowUp from "@material-ui/icons/KeyboardArrowUp";
 import MathDisplay from "components/MathDisplay";
-import { doGet } from 'apis/api-service';
+import { doGet } from "apis/api-service";
 import ReactAudioPlayer from "react-audio-player";
+import { orderBy } from "lodash";
+import { Tooltip } from "@material-ui/core";
 
 const ExamPage = props => {
   const c = useStyles();
@@ -40,6 +43,7 @@ const ExamPage = props => {
   const [tmpAnswer, setTmpAnswer] = useState("");
 
   const [answers, setAnswers] = useState([]);
+  const [showAnswers, setShowAnswers] = useState(false);
   const [examStatus, setExamStatus] = useState(1);
 
   const minutes = 60;
@@ -54,18 +58,16 @@ const ExamPage = props => {
   };
   useEffect(() => {
     if (exam.exam_data) {
-      const firstSoal = exam.exam_data.rancangan.soals.filter(
-        soal => soal.extra.soal_num === 1
+      const firstSoal = exam.exam_data.soals.filter(
+        soal => soal.soal_num === 1
       )[0];
       setCurrentSoal(firstSoal);
       let answersTemp = [];
-      exam.exam_data.rancangan.soals.forEach(soal => {
-        answersTemp = [
-          ...answersTemp,
-          { soal_num: soal.extra.soal_num, text: "" }
-        ];
+      exam.exam_data.soals.forEach(soal => {
+        answersTemp = [...answersTemp, { soal_num: soal.soal_num, text: "" }];
       });
-      setAnswers(answersTemp);
+      const sortedANswer = orderBy(answersTemp, ["soal_num"], ["asc"]);
+      setAnswers(sortedANswer);
 
       setFinishTime(addMinutes(new Date(), exam.exam_data.duration));
       setTimer(true);
@@ -88,27 +90,21 @@ const ExamPage = props => {
     timer === true ? 1000 : null
   );
 
+  const getExamStatus = async id => {
+    const params = { id: id };
+    const status = await doGet("exam/activity/status", params);
+    setExamStatus(status.data);
+  };
 
-  const getExamStatus = async(id) => {
-    const params={id:id}
-    const status = await doGet('exam/activity/status',params)
-    setExamStatus(status.data)
-  }
-  
-  useInterval(
-    () => {
-      if(exam.exam_data){
-        if(examStatus===1){
-          getExamStatus(exam.exam_data.id)        
-        }else{
-          ForcedFinish()          
-        }
+  useInterval(() => {
+    if (exam.exam_data) {
+      if (examStatus === 1) {
+        getExamStatus(exam.exam_data.id);
+      } else {
+        ForcedFinish();
+      }
     }
-    },
-    5000
-  );
-
-  
+  }, 5000);
 
   const ForcedFinish = () => {
     setOpenModal(false);
@@ -116,22 +112,22 @@ const ExamPage = props => {
   };
 
   const answerListClick = answer => {
-    const nextSoal = exam.exam_data.rancangan.soals.filter(
-      soal => soal.extra.soal_num === answer.soal_num
+    const nextSoal = exam.exam_data.soals.filter(
+      soal => soal.soal_num === answer.soal_num
     )[0];
     setCurrentSoal(nextSoal);
   };
 
   const next = () => {
-    if (currentSoal.extra.soal_num < exam.exam_data.rancangan.soals.length) {
-      const nextSoal = exam.exam_data.rancangan.soals.filter(
-        soal => soal.extra.soal_num === currentSoal.extra.soal_num + 1
+    if (currentSoal.soal_num < exam.exam_data.soals.length) {
+      const nextSoal = exam.exam_data.soals.filter(
+        soal => soal.soal_num === currentSoal.soal_num + 1
       )[0];
       setCurrentSoal(nextSoal);
       setTemporaryAnswer(nextSoal);
     } else {
-      const nextSoal = exam.exam_data.rancangan.soals.filter(
-        soal => soal.extra.soal_num === 1
+      const nextSoal = exam.exam_data.soals.filter(
+        soal => soal.soal_num === 1
       )[0];
       setCurrentSoal(nextSoal);
       setTemporaryAnswer(nextSoal);
@@ -139,15 +135,15 @@ const ExamPage = props => {
   };
 
   const prev = () => {
-    if (currentSoal.extra.soal_num > 1) {
-      const prevSoal = exam.exam_data.rancangan.soals.filter(
-        soal => soal.extra.soal_num === currentSoal.extra.soal_num - 1
+    if (currentSoal.soal_num > 1) {
+      const prevSoal = exam.exam_data.soals.filter(
+        soal => soal.soal_num === currentSoal.soal_num - 1
       )[0];
       setCurrentSoal(prevSoal);
       setTemporaryAnswer(prevSoal);
     } else {
-      const prevSoal = exam.exam_data.rancangan.soals.filter(
-        soal => soal.extra.soal_num === exam.exam_data.rancangan.soals.length
+      const prevSoal = exam.exam_data.soals.filter(
+        soal => soal.soal_num === exam.exam_data.soals.length
       )[0];
       setCurrentSoal(prevSoal);
       setTemporaryAnswer(prevSoal);
@@ -156,9 +152,8 @@ const ExamPage = props => {
 
   const setTemporaryAnswer = soal => {
     if (soal.answer_type === "E") {
-      const answer = answers.filter(
-        ans => ans.soal_num === soal.extra.soal_num
-      )[0].text;
+      const answer = answers.filter(ans => ans.soal_num === soal.soal_num)[0]
+        .text;
       setTmpAnswer(answer);
     }
   };
@@ -166,11 +161,11 @@ const ExamPage = props => {
   const answering = option => {
     if (ui.active_page.access && ui.active_page.access.includes("E")) {
       const answerIndex = answers.findIndex(
-        answer => answer.soal_num === currentSoal.extra.soal_num
+        answer => answer.soal_num === currentSoal.soal_num
       );
       let newAnswers = [...answers];
       newAnswers[answerIndex] = {
-        soal_num: currentSoal.extra.soal_num,
+        soal_num: currentSoal.soal_num,
         code: option.code,
         answered: true
       };
@@ -191,11 +186,11 @@ const ExamPage = props => {
   const ragu = () => {
     if (ui.active_page.access && ui.active_page.access.includes("E")) {
       const answerIndex = answers.findIndex(
-        answer => answer.soal_num === currentSoal.extra.soal_num
+        answer => answer.soal_num === currentSoal.soal_num
       );
       let newAnswers = [...answers];
       newAnswers[answerIndex] = {
-        soal_num: currentSoal.extra.soal_num,
+        soal_num: currentSoal.soal_num,
         ragu: true,
         text: ""
       };
@@ -226,11 +221,11 @@ const ExamPage = props => {
     if (ui.active_page.access && ui.active_page.access.includes("E")) {
       if (tmpAnswer.trim() !== "") {
         const answerIndex = answers.findIndex(
-          answer => answer.soal_num === currentSoal.extra.soal_num
+          answer => answer.soal_num === currentSoal.soal_num
         );
         let newAnswers = [...answers];
         newAnswers[answerIndex] = {
-          soal_num: currentSoal.extra.soal_num,
+          soal_num: currentSoal.soal_num,
           text: tmpAnswer,
           answered: true
         };
@@ -250,6 +245,75 @@ const ExamPage = props => {
     }
   };
 
+  const answerListComponent = () => {
+    if (!showAnswers) {
+      return (
+        <Grid item xs={10} container alignContent="flex-start">
+          <Button
+            onClick={() => setShowAnswers(!showAnswers)}
+            variant="contained"
+            color="primary"
+            className={c.showAnswerButton}
+          >
+            Show My Answers
+          </Button>
+        </Grid>
+      );
+    } else {
+      return (
+        <Grid container justify="flex-end" spacing={2} className={common.padding}>
+        <Grid
+          item
+          xs={10}
+          container
+          alignContent="flex-start"
+          className={c.answerWrapper}
+        >
+          {currentSoal !== null &&
+            answers.map(answer => (
+              <Grid
+                key={answer.soal_num}
+                container
+                justify="center"
+                alignItems="center"
+                className={clsx(
+                  c.answer,
+                  answer.answered && c.answered,
+                  answer.ragu && c.ragu,
+                  answer.soal_num === currentSoal.soal_num &&
+                    c.selectedAnswerList
+                )}
+                onClick={() => answerListClick(answer)}
+              >
+                {answer.soal_num}
+                <Badge
+                  className={c.answerBadge}
+                  overlap="circle"
+                  badgeContent={answer.code}
+                  color="primary"
+                >
+                  <span />
+                </Badge>
+              </Grid>
+            ))}
+            
+        </Grid>
+        <Grid item xs={10} container justify="center">
+          <Tooltip title="Hide Answer" >
+          <IconButton
+            onClick={() => setShowAnswers(!showAnswers)}
+            color="primary"
+            size="small"
+          >            
+            <KeyboardArrowUp fontSize="large"/>
+          </IconButton>
+          </Tooltip>
+        </Grid>
+        </Grid>
+      );
+    }
+  };
+
   return (
     <Grid container direction="column" alignItems="stretch" className={c.root}>
       <Grid container alignItems="center" className={c.header} wrap="nowrap">
@@ -262,7 +326,7 @@ const ExamPage = props => {
             alignItems="center"
             className={c.noSoal}
           >
-            {currentSoal !== null && currentSoal.extra.soal_num}
+            {currentSoal !== null && currentSoal.soal_num}
           </Grid>
         </Grid>
 
@@ -312,7 +376,12 @@ const ExamPage = props => {
             <Conditional
               condition={currentSoal !== null && currentSoal.content_type === 5}
             >
-              <ReactAudioPlayer controlsList="nodownload" style={{flex:'1'}} src={currentSoal !== null && currentSoal.content} controls />              
+              <ReactAudioPlayer
+                controlsList="nodownload"
+                style={{ flex: "1" }}
+                src={currentSoal !== null && currentSoal.content}
+                controls
+              />
             </Conditional>
           </Grid>
 
@@ -333,7 +402,7 @@ const ExamPage = props => {
                       c.soalOption,
                       option.code ===
                         answers.filter(
-                          ans => ans.soal_num === currentSoal.extra.soal_num
+                          ans => ans.soal_num === currentSoal.soal_num
                         )[0].code && c.choosenOption
                     )}
                     onClick={() => answering(option)}
@@ -347,7 +416,7 @@ const ExamPage = props => {
                         c.optionCode,
                         option.code ===
                           answers.filter(
-                            ans => ans.soal_num === currentSoal.extra.soal_num
+                            ans => ans.soal_num === currentSoal.soal_num
                           )[0].code && c.choosenOptionCode
                       )}
                       onClick={() => answering(option)}
@@ -361,9 +430,13 @@ const ExamPage = props => {
                       <Conditional condition={option.content_type === 3}>
                         <MathDisplay value={option.content} />
                       </Conditional>
-                      <Conditional condition={option.content_type === 4}>                      
-                        <img alt={option.code} className={c.imageOption} src={option.content}/>
-                    </Conditional>
+                      <Conditional condition={option.content_type === 4}>
+                        <img
+                          alt={option.code}
+                          className={c.imageOption}
+                          src={option.content}
+                        />
+                      </Conditional>
                     </Grid>
                   </Grid>
                 ))}
@@ -398,41 +471,7 @@ const ExamPage = props => {
         </Grid>
 
         <Grid item xs={3} container alignItems="flex-end" direction="column">
-          <Grid
-            item
-            xs={10}
-            container
-            alignContent="flex-start"
-            className={c.answerWrapper}
-          >
-            {currentSoal !== null &&
-              answers.map(answer => (
-                <Grid
-                  key={answer.soal_num}
-                  container
-                  justify="center"
-                  alignItems="center"
-                  className={clsx(
-                    c.answer,
-                    answer.answered && c.answered,
-                    answer.ragu && c.ragu,
-                    answer.soal_num === currentSoal.extra.soal_num &&
-                      c.selectedAnswerList
-                  )}
-                  onClick={() => answerListClick(answer)}
-                >
-                  {answer.soal_num}
-                  <Badge
-                    className={c.answerBadge}
-                    overlap="circle"
-                    badgeContent={answer.code}
-                    color="primary"
-                  >
-                    <span />
-                  </Badge>
-                </Grid>
-              ))}
-          </Grid>
+          {answerListComponent()}
         </Grid>
       </Grid>
 

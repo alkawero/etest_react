@@ -9,22 +9,12 @@ import useStyles, { selectCustomZindex } from "./rancanganStyle";
 import { useCommonStyles } from "themes/commonStyle";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
 import "assets/css/react-draft-wysiwyg.css";
-import Select from "@material-ui/core/Select";
-import MenuItem from "@material-ui/core/MenuItem";
 import Chip from "@material-ui/core/Chip";
 import AddButton from "components/AddButton";
-import Checkbox from "@material-ui/core/Checkbox";
-import Tooltip from "@material-ui/core/Tooltip";
 import Conditional from "components/Conditional";
-import FormControl from "@material-ui/core/FormControl";
-import FormLabel from "@material-ui/core/FormLabel";
-import RadioGroup from "@material-ui/core/RadioGroup";
-import Radio from "@material-ui/core/Radio";
 import PopUp from "components/PopUp";
 import DeleteButton from "components/DeleteButton";
-import Avatar from "@material-ui/core/Avatar";
 import { UserContext } from "contexts/UserContext";
 import { default as RSelect } from "react-select";
 import SearchListAsync from "components/SearchListAsync";
@@ -45,16 +35,8 @@ import EditButton from "components/EditButton";
 import CancelButton from "components/CancelButton";
 import Typography from "@material-ui/core/Typography";
 import MailButton from "components/MailButton";
-import Dialog from "@material-ui/core/Dialog";
-import DialogActions from "@material-ui/core/DialogActions";
-import DialogContent from "@material-ui/core/DialogContent";
-import DialogContentText from "@material-ui/core/DialogContentText";
-import DialogTitle from "@material-ui/core/DialogTitle";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-import Divider from "@material-ui/core/Divider";
-import ListItemText from "@material-ui/core/ListItemText";
 
+import Notes from "components/Notes";
 
 const RancanganForm = ({
   create,
@@ -78,39 +60,40 @@ const RancanganForm = ({
   const [openNotes, setOpenNotes] = useState(false);
   const [openBottomDrawer, setOpenBottomDrawer] = useState(false);
   const [bottomDrawerTittle, setBottomDrawerTittle] = useState("");
-  const [rancanganStatus, setRancanganStatus] = useState("");
-  
+  const [rancanganStatus, setRancanganStatus] = useState("New");
 
-  const [notes, setNotes] = useState("");
+  
   const [notesData, setNotesData] = useState([]);
-  const notesChange = e => {
-    setNotes(e.target.value)
+  const [notesType, setNotesType] = useState(1);
+  const [disableNoteTypeChange, setDisableNoteTypeChange] = useState(false);
+  const notesTypeOption = [{value:1,label:'Notes'},
+  {value:3,label:'Revision Reason'},
+  {value:4,label:'Reject Reason'}]
+  const notesTypeChange = event => {
+    setNotesType(event.target.value)
   }
-  const getNotesData = async () => {
-    const reviewers = rancangan.reviewers.filter(ran=>(ran.emp_id===user.id))    
-    let role_id = null
-    let user_id = null
-    if(reviewers.length>0){
-        role_id=9
-        user_id=rancangan.creator_id        
-    }else{
-        user_id = user.id
-    }
-    const params = { 
-        object_id:rancangan.id,
-        user_id:user_id,
-        to_role:role_id,
-        note_type_code:1
-    };
     
+
+  const getNotesData = async () => {
+    const reviewers = rancangan.reviewers.filter(ran => ran.emp_id === user.id);
+    let role_id = null;
+    let user_id = null;
+    if (reviewers.length > 0) {
+      role_id = 9;
+      user_id = rancangan.creator_id;
+    } else {
+      user_id = user.id;
+    }
+    const params = {
+      object_id: rancangan.id,
+      user_id: user_id,
+      to_role: role_id,
+      note_type_codes: notesTypeOption.map(note=>(note.value))
+    };
+
     const response = await doGet("note", params);
     setNotesData(response.data);
   };
-
-
-  
-
-
 
   const [soal, setSoal] = useState(null);
   const [selectedSoal, setSelectedSoal] = useState([]);
@@ -410,7 +393,7 @@ const RancanganForm = ({
 
   const detail = async obj => {
     const soal = await getById(obj.id);
-    setSoal(soal);    
+    setSoal(soal);
     setOpenTopDrawer(true);
     setTopDrawerTittle("Soal Detail");
   };
@@ -461,49 +444,62 @@ const RancanganForm = ({
     setRancanganStatus("Verified");
   };
 
-  const rejected = async id => {
-    const params = { id: id, status: 5 };
+
+  const openNotesBeforeAction = (notesType) =>{
+    setOpenNotes(true)
+    setNotesType(notesType)
+    setDisableNoteTypeChange(true)
+  }
+  const rejected = async () => {    
+    const params = { id: rancangan.id, status: 5 };
     await doPatch("rancangan/status", params, "rejected by reviewer");
-    setRancanganStatus("Rejected");
+    setRancanganStatus("Rejected");   
   };
 
-  const revision = async id => {
-    const params = { id: id, status: 4 };
+  const revision = async () => {
+    const params = { id: rancangan.id, status: 4 };
     await doPatch("rancangan/status", params, "need for revision");
     setRancanganStatus("Need Revision");
   };
 
   const showNotes = () => {
     setOpenNotes(true);
-    getNotesData()
+    getNotesData();
+    setDisableNoteTypeChange(false)
   };
 
-
-  const sendNotes = async () => {
-    
-    const reviewers = rancangan.reviewers.filter(ran=>(ran.emp_id===user.id))
-    let to_person=null
-    let to_role = null
-    if(reviewers.length>0){
-        to_person = rancangan.creator_id        
-    }else{
-        to_role = 9
+  const sendNotes = async (notes) => {
+    const reviewers = rancangan.reviewers.filter(ran => ran.emp_id === user.id);
+    let to_person = null;
+    let to_role = null;
+    if (reviewers.length > 0) {
+      to_person = rancangan.creator_id;
+    } else {
+      to_role = 9;
     }
-    
+
     const params = {
-      note_type_code: 1,
+      note_type_code: notesType,
       text: notes,
       from: user.id,
       to_person: to_person,
       to_role: to_role,
       object_id: rancangan.id,
-      status:0
-    };
+      status: 0
+    };   
 
-    await doPost("note", params, "note saved");
-    getNotesData()
-    setNotes('')
+    await doPost("note", params, "note saved");    
+    getNotesData();
 
+    if(notesType===3){
+      revision()
+    }
+    else if(notesType===4){
+      rejected()
+    }
+    
+
+    
   };
 
   const submit = () => {
@@ -580,6 +576,7 @@ const RancanganForm = ({
     setPartnerQuota(0);
     setSelectedSoal([]);
     setErrorState({});
+    setRancanganStatus("New");
   };
 
   return (
@@ -750,38 +747,40 @@ const RancanganForm = ({
             </Grid>
           </Conditional>
 
-          
-            <Grid container justify="center" alignItems="center">
+          <Grid container justify="space-between" alignItems="center">
+            <Grid item>
               <Typography variant="h5">status : {rancanganStatus}</Typography>
-              <Protected current={currentAccess} only="A">
-              <ApproveButton
-                tooltip="Approve"
-                action={() => approved(rancangan.id)}
-                classes={classes.floatButton}
-              />
-
-              <EditButton
-                tooltip="Need Revision"
-                action={() => revision(rancangan.id)}
-                classes={classes.floatButton}
-              />
-              <CancelButton
-                tooltip="Reject"
-                action={() => rejected(rancangan.id)}
-                classes={classes.floatButton}
-              />
-              </Protected>
-              <Protected current={currentAccess} access={['W','A']}>
-          <MailButton
-                tooltip="Create Notes"
-                action={showNotes}
-                classes={classes.floatButton}
-              />     
-            
-            </Protected>
             </Grid>
-          
-             
+
+            <Grid item>
+              <Protected current={currentAccess} only="A">
+                <ApproveButton
+                  tooltip="Approve"
+                  action={() => approved(rancangan.id)}
+                  classes={classes.floatButton}
+                />
+
+                <EditButton
+                  tooltip="Need Revision"
+                  action={() => openNotesBeforeAction(3)}
+                  classes={classes.floatButton}
+                />
+                <CancelButton
+                  tooltip="Reject"
+                  action={() => openNotesBeforeAction(4)}
+                  classes={classes.floatButton}
+                />
+              </Protected>
+              <Protected current={currentAccess} access={["W", "A"]}>
+                <MailButton
+                  tooltip="Create Notes"
+                  action={showNotes}
+                  classes={classes.floatButton}
+                />
+              </Protected>
+            </Grid>
+          </Grid>
+
           <span style={{ color: "red", margin: "0 16px" }}>
             {errorState.ejenjang}
           </span>
@@ -983,52 +982,16 @@ const RancanganForm = ({
         <SoalForm action="detail" soal={soal} onClose={closeDetailSoal} />
       </TopDrawer>
 
-      <Dialog
-        open={openNotes}
-        onClose={() => setOpenNotes(false)}
-        aria-labelledby="form-dialog-title"
-      >
-        <DialogTitle id="form-dialog-title">Notes</DialogTitle>
-        <DialogContent>
-          <Grid container className={classes.chatList}>
-          <List className={classes.root}>
-            {notesData.map(note=>(
-                <>
-                <ListItem alignItems="flex-start">
-                <ListItemText
-                  primary={note.from_name}
-                  secondary={
-                    note.text
-                  }
-                />
-              </ListItem>
-              <Divider component="li" />
-                </>
-            ))}                    
-            </List>
-          </Grid>
-          <TextField
-            autoFocus
-            variant="outlined"
-            margin="dense"
-            id="notes"
-            placeholder="type..."
-            fullWidth
-            multiline
-            rows="3"
-            value={notes}
-            onChange={notesChange}
-          />
-        </DialogContent>
-        <DialogActions>
-
-          <Button onClick={() => setOpenNotes(false)}>Cancel</Button>
-          
-          <Button onClick={sendNotes} color="primary" variant="contained">
-            Send
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <Notes open={openNotes} 
+      onClose={()=>setOpenNotes(false)} 
+      notesData={notesData} 
+      notesType={notesType}
+      notesTypeChange={notesTypeChange}
+      notesTypeOption={notesTypeOption}
+      onSubmit={sendNotes}
+      disabled={disableNoteTypeChange}
+      />
+      
     </>
   );
 };

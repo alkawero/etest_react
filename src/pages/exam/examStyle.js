@@ -124,6 +124,9 @@ const useStyles = makeStyles(theme => ({
         borderRadius: 4,
         padding: 5,
         width: 200
+      },
+      showAnswerButton:{
+          width:'100%'
       }
 
     

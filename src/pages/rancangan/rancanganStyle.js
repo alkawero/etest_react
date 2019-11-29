@@ -150,10 +150,7 @@ const useStyles = makeStyles(theme => ({
     table_header:{
         backgroundColor:'#f5f5f5',        
     },
-    chatList:{
-        maxHeight:'50vh',
-        overflowY:'auto'
-    }
+    
     
     
     
@@ -181,7 +178,8 @@ export const selectCustomZindex = {
     container: (base, state) => {
         return ({
             ...base,
-            zIndex: state.isFocused ? "1100" : "1"  //Only when current state focused
+            zIndex: state.isFocused ? "1400" : "1"  //Only when current state focused
         })
-    }
+    },
+    menu: styles => ({ ...styles, zIndex: "1500" })
 };

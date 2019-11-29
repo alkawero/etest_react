@@ -52,7 +52,15 @@ export function* getTahunPelajaran(){
 export function* getExamsData(action){   
     try {        
         const response = yield doGet('exam/detail/'+action.payload.id)
-        yield put(setExamsData(response.data))
+        const soals = response.data.rancangan.soals        
+        let soal_nums = Array.from(Array(soals.length),(x,index)=> ++index);
+        soal_nums.sort(() => Math.random() - 0.5);
+        let i = 0;
+        const randomSoals = soals.map(soal=>{
+            return {...soal,soal_num:soal_nums[i++]}}
+            )
+        const examData = {...response.data,soals:randomSoals}
+        yield put(setExamsData(examData))
         yield put(setExamStatus('start'))
     } catch (e) {
         console.log(e)

@@ -14,6 +14,7 @@ import Typography from "@material-ui/core/Typography";
 import CardHeader from "@material-ui/core/CardHeader";
 import IconButton from "@material-ui/core/IconButton";
 import MoreVert from "@material-ui/icons/MoreVert";
+import MenuIcons from "@material-ui/icons/Menu";
 import Chip from "@material-ui/core/Chip";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
@@ -24,6 +25,7 @@ import isToday from "date-fns/isToday";
 import Conditional from "components/Conditional";
 import Protected from "components/Protected";
 import formatDistance from "date-fns/formatDistance";
+import Hidden from '@material-ui/core/Hidden';
 import {
   MuiPickersUtilsProvider,  
   KeyboardDatePicker,DatePicker
@@ -141,7 +143,16 @@ const Dashboard = props => {
 
   return (
     <Grid container className={classes.root} direction="column">
-      <Grid container>
+      <Grid container alignItems='flex-start'>
+      <Hidden mdUp>
+      <Grid item xs={2} container justify='center' alignItems='center'>
+      <IconButton onClick={()=>{}} size="small">
+                  <MenuIcons fontSize="inherit" />
+      </IconButton>
+      </Grid>
+      </Hidden>  
+      
+      <Hidden smDown>
         <Grid item xs={2} container alignItems="flex-start" direction="column">
           <Grid>
             <Chip label="Exam Schedules" variant="outlined" onClick={getExam} />
@@ -194,9 +205,10 @@ const Dashboard = props => {
             </MuiPickersUtilsProvider>
           </Grid>
         </Grid>
+        </Hidden>
         <Grid
           item
-          xs={9}
+          xs={10}
           container
           spacing={2}
           wrap="nowrap"
