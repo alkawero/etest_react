@@ -3,7 +3,7 @@ import { isEmpty } from "lodash";
 import Grid from "@material-ui/core/Grid";
 import { useUpdateEffect } from "react-use";
 import clsx from "clsx";
-import { doUpload, doPost, doGet, doPut } from "apis/api-service";
+import { doUpload, doGet } from "apis/api-service";
 import useStyles, { selectCustomZindex } from "./soalStyle";
 import { useCommonStyles } from "themes/commonStyle";
 import Button from "@material-ui/core/Button";
@@ -12,10 +12,8 @@ import FormControlLabel from "@material-ui/core/FormControlLabel";
 import { Editor } from "react-draft-wysiwyg";
 import {
   EditorState,
-  convertFromHTML,
-  blocksFromHTML,
-  ContentState,
-  createFromBlockArray
+  convertFromHTML,  
+  ContentState  
 } from "draft-js";
 import { stateToHTML } from "draft-js-export-html";
 import "assets/css/react-draft-wysiwyg.css";
@@ -1018,6 +1016,9 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
                   <Grid container alignItems="center" item xs={9}>
                     <Conditional condition={answer.contentType === 1}>
                       {answer.content}
+                    </Conditional>
+                    <Conditional condition={answer.contentType === 2}>
+                    <div dangerouslySetInnerHTML={{__html: answer.content}}></div>
                     </Conditional>
                     <Conditional condition={answer.contentType === 3}>
                       <MathDisplay value={answer.content} />

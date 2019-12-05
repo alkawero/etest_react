@@ -9,12 +9,17 @@ import MathDisplay from "components/MathDisplay";
 import TextField from "@material-ui/core/TextField";
 import { useDropzone } from "react-dropzone";
 import { doUpload } from "apis/api-service";
-import Chip from "@material-ui/core/Chip";
 import Typography from "@material-ui/core/Typography";
 import { selectCustomZindex } from "themes/commonStyle";
+import { Editor } from "react-draft-wysiwyg";
+import {
+  EditorState
+} from "draft-js";
+import { stateToHTML } from "draft-js-export-html";
 
 const answerContentTypes = [
   { id: 1, label: "plain text", value: 1 },
+  { id: 2, label: "rich text", value: 2 },
   { id: 3, label: "equation", value: 3 },
   { id: 4, label: "image", value: 4 }
 ];
@@ -28,6 +33,11 @@ const AnswerForm = ({ save, cancel, formulas }) => {
   const [mathContent, setMathContent] = useState("");
   const [file, setFile] = useState(null);
   const [filePath, setFilePath] = useState("");
+  const [contentEditor, setContentEditor] = useState(EditorState.createEmpty());
+  
+  const contentEditorChange = contentEditor => {    
+      setContentEditor(contentEditor);
+  };
 
   const contentTypeChange = e => {
     setContentType(e);
@@ -39,6 +49,12 @@ const AnswerForm = ({ save, cancel, formulas }) => {
     else {
       setCode("");
     }
+  };
+
+  const uploadImageCallBack = img => {
+    const formData = new FormData();
+    formData.append("img", img);
+    return doUpload("images/up", formData);
   };
 
   const onDrop = useCallback(files => {
@@ -63,6 +79,10 @@ const AnswerForm = ({ save, cancel, formulas }) => {
         case 1:
           content = plainContent;
           break;
+        case 2:
+            if (contentEditor.getCurrentContent().hasText())
+            content = stateToHTML(contentEditor.getCurrentContent())            
+            break;  
         case 3:
           content = mathContent;
           break;
@@ -149,6 +169,18 @@ const AnswerForm = ({ save, cancel, formulas }) => {
             placeholder="text content"
           />
         </Conditional>
+        <Conditional condition={contentType!==null && contentType.value === 2}>
+              <Editor
+                editorState={contentEditor}
+                onEditorStateChange={contentEditorChange}
+                toolbar={{
+                  image: {
+                    uploadCallback: uploadImageCallBack,
+                    previewImage: true
+                  }
+                }}
+              />
+            </Conditional>
         <Conditional condition={contentType!==null && contentType.value === 3}>
           <MathInput
             value={mathContent}

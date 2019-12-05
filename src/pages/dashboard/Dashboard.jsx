@@ -39,6 +39,7 @@ const Dashboard = props => {
   const common = useCommonStyles();
   const dispatch = useDispatch();
   const user = useSelector(state => state.user);
+  const exam_redux = useSelector(state => state.exam);
   const ui = useSelector(state => state.ui);
 
   const [examData, setExamData] = useState([]);
@@ -297,7 +298,7 @@ const Dashboard = props => {
                             classes.buttonWrapper
                           )}
                         >
-                          <Conditional condition={exam.activity.num_code === 1}>
+                          <Conditional condition={exam.activity.num_code === 1 && (user.status!==1)}>
                             <Button
                               variant="contained"
                               color="primary"

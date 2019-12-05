@@ -64,4 +64,16 @@ export function setGlobalError(message){
     return{type:'setGlobalError',payload:message}
 }
 
+export function addTakenExam(exam_id){
+    return{type:'addTakenExam',payload:exam_id}
+}
+
+export function finishExam(data){
+    return{type:'finishExam',payload:data}
+}
+export function setExamDone(){
+    return{type:'setExamDone'}
+}
+
+
 

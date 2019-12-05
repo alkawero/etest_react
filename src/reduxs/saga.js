@@ -1,7 +1,7 @@
 /*
 author alka@2019
 */
-import {setUserLogin,setTahunPelajaran,setExamsData,setExamStatus,setGlobalError} from './actions'
+import {setUserLogin,setTahunPelajaran,setExamsData,setExamStatus,setGlobalError, setExamDone} from './actions'
 import {call, put, takeEvery,takeLatest,all} from 'redux-saga/effects'
 import {doGet,doPost,doSilentPost} from 'apis/api-service'
 import {doGetDummy} from 'tests/api-dummy'
@@ -13,7 +13,8 @@ export const api_url = api+'/api/'
 export function* rootSaga(){
 yield all([
     takeEvery('login',login),
-    takeEvery('getExamsData',getExamsData),
+    takeEvery('getExamsData',getExamsData),  
+    takeEvery('finishExam',finishExam),      
     ])
 }
 
@@ -21,7 +22,7 @@ export function* login(action){
     try {
         let response = null
         if(action.payload.role && action.payload.role==='student'){
-            response  = yield doGet('user/student/',action.payload)            
+            response  = yield doGet('user/student/',action.payload)                        
         }else{
             //const user = yield doGet('user/'+action.payload.username)
             response = yield doSilentPost('loginx',action.payload)            
@@ -29,7 +30,7 @@ export function* login(action){
         if(!response.data.error){
             yield put(setGlobalError(''));
             yield put(setUserLogin(response.data));
-            yield getTahunPelajaran()
+            yield getTahunPelajaran()            
         }else{
             yield put(setGlobalError(response.data.error));
         }
@@ -62,6 +63,17 @@ export function* getExamsData(action){
         const examData = {...response.data,soals:randomSoals}
         yield put(setExamsData(examData))
         yield put(setExamStatus('start'))
+    } catch (e) {
+        console.log(e)
+    }
+}
+
+export function* finishExam(action){   
+    try {        
+        const params = action.payload        
+        const response = yield doSilentPost('exam/finish',params)
+        
+        yield put(setExamDone())
     } catch (e) {
         console.log(e)
     }

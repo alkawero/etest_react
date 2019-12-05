@@ -13,7 +13,7 @@ const initial  = {
     },
     role_access_map:[],
     exam:{
-        
+        taken_exams:[]    
     } ,
     setting:{
 
@@ -96,7 +96,19 @@ export default function appReducer(prev=initial,action){
             state.ui= {
                 ...state.ui,
                 error:action.payload}
+        })        
+        case 'addTakenExam':
+        return produce(prev, state =>{
+            state.exam= {
+                ...state.exam,
+                taken_exams:[...state.exam.taken_exams,action.payload]
+            }
         })
+        
+        case 'setExamDone':
+            return produce(prev, state =>{
+                state.user= {...state.user,status:1}
+            })
 
         default:
             return prev

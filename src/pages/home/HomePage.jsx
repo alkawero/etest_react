@@ -35,6 +35,7 @@ const SchedulePage =  lazy(() => import('pages/schedule/SchedulePage'))
 const Dashboard =  lazy(() => import('pages/dashboard/Dashboard'))
 const ReviewerPage =  lazy(() => import('pages/reviewer/ReviewerPage'))
 const MathPage =  lazy(() => import('pages/math/MathPage'))
+const StatisticPage =  lazy(() => import('pages/statistic/StatisticPage'))
 
 
 
@@ -130,6 +131,7 @@ const HomePage = (props) => {
                                 <Route path='/home/schedule' component={SchedulePage} />  
                                 <Route path='/home/reviewer' component={ReviewerPage} /> 
                                 <Route path='/home/math' component={MathPage} /> 
+                                <Route path='/home/statistic' component={StatisticPage} /> 
                                 
                                                               
                             </Switch>             

@@ -22,7 +22,8 @@ import BottomDrawer from "components/BottomDrawer";
 import Table from "@material-ui/core/Table";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
-import TableCell from "@material-ui/core/TableCell";
+//import TableCell from "@material-ui/core/TableCell";
+import TableCell from "components/TableCell";
 import TableBody from "@material-ui/core/TableBody";
 import Protected from "components/Protected";
 import StatusChip from "components/StatusChip";
@@ -37,6 +38,7 @@ import Typography from "@material-ui/core/Typography";
 import MailButton from "components/MailButton";
 
 import Notes from "components/Notes";
+import InputText from "../../components/InputText";
 
 const RancanganForm = ({
   create,
@@ -54,6 +56,10 @@ const RancanganForm = ({
 
   const [errorState, setErrorState] = useState({});
 
+  const [title, setTitle] = useState("");
+  const titleChange = text => {
+    setTitle(text);
+  };
   const [status, setStatus] = useState(0);
   const [openTopDrawer, setOpenTopDrawer] = useState(false);
   const [topDrawerTittle, setTopDrawerTittle] = useState("");
@@ -62,17 +68,17 @@ const RancanganForm = ({
   const [bottomDrawerTittle, setBottomDrawerTittle] = useState("");
   const [rancanganStatus, setRancanganStatus] = useState("New");
 
-  
   const [notesData, setNotesData] = useState([]);
   const [notesType, setNotesType] = useState(1);
   const [disableNoteTypeChange, setDisableNoteTypeChange] = useState(false);
-  const notesTypeOption = [{value:1,label:'Notes'},
-  {value:3,label:'Revision Reason'},
-  {value:4,label:'Reject Reason'}]
+  const notesTypeOption = [
+    { value: 1, label: "Notes" },
+    { value: 3, label: "Revision Reason" },
+    { value: 4, label: "Reject Reason" }
+  ];
   const notesTypeChange = event => {
-    setNotesType(event.target.value)
-  }
-    
+    setNotesType(event.target.value);
+  };
 
   const getNotesData = async () => {
     const reviewers = rancangan.reviewers.filter(ran => ran.emp_id === user.id);
@@ -88,7 +94,7 @@ const RancanganForm = ({
       object_id: rancangan.id,
       user_id: user_id,
       to_role: role_id,
-      note_type_codes: notesTypeOption.map(note=>(note.value))
+      note_type_codes: notesTypeOption.map(note => note.value)
     };
 
     const response = await doGet("note", params);
@@ -126,12 +132,14 @@ const RancanganForm = ({
     }
   };
 
-  const [soalQuota, setSoalQuota] = useState(0);
+  const [soalQuota, setSoalQuota] = useState(10);
   const soalQuotaChange = e => {
     const value = parseInt(e.target.value);
     if (action === "edit" || action === "create") {
       if (value > 0) {
         setSoalQuota(value);
+        setPartnerMc(0);
+        setPartnerEs(0);
         if (quotaComposition === "M") {
           setMcComposition(value);
           setEsComposition(0);
@@ -141,11 +149,53 @@ const RancanganForm = ({
         } else {
           setMcComposition(value - 1);
           setEsComposition(1);
+          setCreatorMc(value - 1);
+          setCreatorEs(1);
         }
       }
     }
   };
 
+  const [creatorMc, setCreatorMc] = useState(6);
+  const creatorMcChange = e => {
+    const creatorMcValue = parseInt(e.target.value);
+    if (action === "edit" || action === "create") {
+      if (creatorMcValue <= mcComposition && creatorMcValue > 0) {
+        setCreatorMc(creatorMcValue);
+        setPartnerMc(mcComposition - creatorMcValue);
+      }
+    }
+  };
+  const [creatorEs, setCreatorEs] = useState(4);
+  const creatorEsChange = e => {
+    const creatorEsValue = parseInt(e.target.value);
+    if (action === "edit" || action === "create") {
+      if (creatorEsValue <= esComposition && creatorEsValue > 0) {
+        setCreatorEs(creatorEsValue);
+        setPartnerEs(esComposition - creatorEsValue);
+      }
+    }
+  };
+  const [partnerMc, setPartnerMc] = useState(0);
+  const partnerMcChange = e => {
+    const value = parseInt(e.target.value);
+    if (action === "edit" || action === "create") {
+      if (value <= mcComposition && value > 0) {
+        setPartnerMc(value);
+        setCreatorMc(mcComposition - value);
+      }
+    }
+  };
+  const [partnerEs, setPartnerEs] = useState(0);
+  const partnerEsChange = e => {
+    const value = parseInt(e.target.value);
+    if (action === "edit" || action === "create") {
+      if (value <= esComposition && value > 0) {
+        setPartnerEs(value);
+        setCreatorEs(esComposition - value);
+      }
+    }
+  };
   const [dataQuotaComposition, setDataQuotaComposition] = useState([]);
   const getDataQuotaComposition = async () => {
     const params = { group: "quota_composition" };
@@ -164,34 +214,44 @@ const RancanganForm = ({
       if (e.value === "M") {
         setMcComposition(soalQuota);
         setEsComposition(0);
+        setCreatorMc(soalQuota - partnerMc);
+        setCreatorEs(0);
       } else if (e.value === "E") {
         setEsComposition(soalQuota);
         setMcComposition(0);
+        setCreatorMc(0);
+        setCreatorEs(soalQuota - partnerEs);
       } else {
-        setEsComposition(1);
-        setMcComposition(soalQuota - 1);
+        setCreatorMc(soalQuota - 1);
+        setCreatorEs(1);
+        setPartnerMc(0);
+        setPartnerEs(0);
       }
     }
   };
 
-  const [mcComposition, setMcComposition] = useState(0);
+  const [mcComposition, setMcComposition] = useState(6);
   const mcCompositionChange = e => {
     const value = parseInt(e.target.value);
     if (action === "edit" || action === "create") {
       if (value < soalQuota && value > 0) {
         setMcComposition(value);
         setEsComposition(soalQuota - value);
+        setCreatorMc(value);
+        setCreatorEs(soalQuota - value);
       }
     }
   };
 
-  const [esComposition, setEsComposition] = useState(0);
+  const [esComposition, setEsComposition] = useState(4);
   const esCompositionChange = e => {
     const value = parseInt(e.target.value);
     if (action === "edit" || action === "create") {
       if (value < soalQuota && value > 0) {
         setEsComposition(value);
         setMcComposition(soalQuota - value);
+        setCreatorEs(value);
+        setCreatorMc(soalQuota - value);
       }
     }
   };
@@ -200,15 +260,19 @@ const RancanganForm = ({
 
   const [partner, setPartner] = useState(null);
   const addPartner = user => {
+    if (action === "edit" || action === "create") {
     setPartner({ id: user.id, name: user.text });
     setCollaboration("P");
     setPopUpAnchor(null);
+    }
   };
 
   const removePartner = user => {
+    if (action === "edit" || action === "create") {
     setPartner(null);
     setCollaboration("F");
     setPartnerQuota(0);
+    }
   };
 
   const [partnerQuota, setPartnerQuota] = useState(0);
@@ -305,6 +369,7 @@ const RancanganForm = ({
   useEffect(() => {
     //setting for detail/edit
     if (rancangan) {
+      setTitle(rancangan.title);
       setExamType({
         label: rancangan.exam_type.value,
         value: rancangan.exam_type.num_code
@@ -331,6 +396,11 @@ const RancanganForm = ({
       });
       setMcComposition(rancangan.mc_composition);
       setEsComposition(rancangan.es_composition);
+      setCreatorMc(rancangan.mc_creator);
+      setCreatorEs(rancangan.es_creator);
+      setPartnerMc(rancangan.mc_partner);
+      setPartnerEs(rancangan.es_partner);
+
       setCollaboration(rancangan.collaboration.char_code);
       if (rancangan.partner_id !== null)
         setPartner({ id: rancangan.partner_id, name: rancangan.partner_name });
@@ -404,10 +474,25 @@ const RancanganForm = ({
   };
 
   const chooseSoal = soal => {
-    const soalWithNo = { ...soal, no: selectedSoal.length + 1, bobot: 0 };
-    const added = [...selectedSoal, soalWithNo];
-    const sorted = sortBy(added, soal => soal.no);
-    setSelectedSoal(sorted);
+    const mySoal = getSoalByMe();
+    let quotaSoal = 0;
+    if (partner !== null) {
+      if (partner.id === user.id) {
+        quotaSoal = partnerMc + partnerEs;
+      } else {
+        quotaSoal = creatorMc + creatorEs;
+      }
+    }else{
+      quotaSoal = soalQuota
+    }
+
+    if (quotaSoal > mySoal.length) {
+      const soalByMe = { ...soal, add_by: user.id };
+      const soalWithNo = { ...soalByMe, no: selectedSoal.length + 1, bobot: 0 };
+      const added = [...selectedSoal, soalWithNo];
+      const sorted = sortBy(added, soal => soal.no);
+      setSelectedSoal(sorted);
+    }
 
     closeAddSoal();
   };
@@ -444,16 +529,15 @@ const RancanganForm = ({
     setRancanganStatus("Verified");
   };
 
-
-  const openNotesBeforeAction = (notesType) =>{
-    setOpenNotes(true)
-    setNotesType(notesType)
-    setDisableNoteTypeChange(true)
-  }
-  const rejected = async () => {    
+  const openNotesBeforeAction = notesType => {
+    setOpenNotes(true);
+    setNotesType(notesType);
+    setDisableNoteTypeChange(true);
+  };
+  const rejected = async () => {
     const params = { id: rancangan.id, status: 5 };
     await doPatch("rancangan/status", params, "rejected by reviewer");
-    setRancanganStatus("Rejected");   
+    setRancanganStatus("Rejected");
   };
 
   const revision = async () => {
@@ -463,12 +547,13 @@ const RancanganForm = ({
   };
 
   const showNotes = () => {
+    setNotesType(1)
     setOpenNotes(true);
     getNotesData();
-    setDisableNoteTypeChange(false)
+    setDisableNoteTypeChange(false);
   };
 
-  const sendNotes = async (notes) => {
+  const sendNotes = async notes => {
     const reviewers = rancangan.reviewers.filter(ran => ran.emp_id === user.id);
     let to_person = null;
     let to_role = null;
@@ -486,20 +571,21 @@ const RancanganForm = ({
       to_role: to_role,
       object_id: rancangan.id,
       status: 0
-    };   
+    };
 
-    await doPost("note", params, "note saved");    
+    await doPost("note", params, "note saved");
     getNotesData();
 
-    if(notesType===3){
-      revision()
+    if (notesType === 3) {
+      revision();
+    } else if (notesType === 4) {
+      rejected();
     }
-    else if(notesType===4){
-      rejected()
-    }
-    
+    setNotesType(1)
+  };
 
-    
+  const getSoalByMe = () => {
+    return selectedSoal.filter(soal => soal.add_by === user.id);
   };
 
   const submit = () => {
@@ -517,10 +603,36 @@ const RancanganForm = ({
       errors = { ...errors, esubject: "please choose subject" };
     }
 
+    if (sumBobot() !== 100) {
+      errors = { ...errors, ebobot: "total bobot must be 100" };
+    }
+
+    const soalByMe = getSoalByMe();
+    let quotaSoal = 0;
+    if (partner !== null) {
+      if (partner.id === user.id) {
+        quotaSoal = partnerMc + partnerEs;
+      } else {
+        quotaSoal = creatorMc + creatorEs;
+      }
+    }
+    if (soalByMe.length !== quotaSoal) {
+      errors = {
+        ...errors,
+        equota:
+          "you already add " +
+          soalByMe.length +
+          ", you have to add " +
+          quotaSoal +
+          " soal"
+      };
+    }
+
     setErrorState(errors);
 
     if (isEmpty(errors)) {
       let newRancangan = {
+        title: title,
         jenjang: jenjang.value,
         grade_char: grade.value,
         grade_num: grade.label,
@@ -530,6 +642,10 @@ const RancanganForm = ({
         quota_composition: quotaComposition.value,
         mc_composition: mcComposition,
         es_composition: esComposition,
+        mc_creator: creatorMc,
+        es_creator: creatorEs,
+        mc_partner: partnerMc,
+        es_partner: partnerEs,
         collaboration_type: collaboration,
         partner_quota: partnerQuota,
         creator: user.id,
@@ -577,6 +693,19 @@ const RancanganForm = ({
     setSelectedSoal([]);
     setErrorState({});
     setRancanganStatus("New");
+  };
+
+  const sumBobot = () => {
+    return selectedSoal.reduce((a, b) => a + (b["bobot"] || 0), 0);
+  };
+
+  const splitBobot = () => {
+    if (action === "edit" || action === "create") {
+      const newBobot = Math.floor(100 / selectedSoal.length);
+      let splitted = selectedSoal.map(soal => ({ ...soal, bobot: newBobot }));
+      const sorted = sortBy(splitted, soal => soal.no);
+      setSelectedSoal(sorted);
+    }
   };
 
   return (
@@ -649,12 +778,9 @@ const RancanganForm = ({
               type="number"
               onChange={mcCompositionChange}
               variant="outlined"
-              label="multiple choice"
-              style={{ margin: "-1px 4px 0 4px", width: 120 }}
+              label="MC"
+              style={{ margin: "-1px 4px 0 4px", width: 60 }}
             />
-          </Conditional>
-
-          <Conditional condition={quotaComposition.value === "C"}>
             <TextField
               id="esComposition"
               value={esComposition}
@@ -662,21 +788,45 @@ const RancanganForm = ({
               onChange={esCompositionChange}
               variant="outlined"
               type="number"
-              label="essay"
+              label="ES"
               style={{ margin: "-1px 4px 0 4px", width: 60 }}
             />
           </Conditional>
 
           <Conditional condition={collaboration === "P"}>
-            <TextField
-              id="myQuota"
-              value={soalQuota - partnerQuota}
-              margin="dense"
-              variant="outlined"
-              type="number"
-              label="my quota"
-              style={{ margin: "-1px 4px 0 4px", width: 80 }}
-            />
+            <Conditional
+              condition={
+                quotaComposition.value === "M" || quotaComposition.value === "C"
+              }
+            >
+              <TextField
+                id="creatorMc"
+                value={creatorMc}
+                margin="dense"
+                variant="outlined"
+                type="number"
+                label="creator MC"
+                style={{ margin: "-1px 4px 0 4px", width: 100 }}
+                onChange={creatorMcChange}
+              />
+            </Conditional>
+
+            <Conditional
+              condition={
+                quotaComposition.value === "E" || quotaComposition.value === "C"
+              }
+            >
+              <TextField
+                id="creatorEs"
+                value={creatorEs}
+                margin="dense"
+                variant="outlined"
+                type="number"
+                label="creator ES"
+                style={{ margin: "-1px 4px 0 4px", width: 100 }}
+                onChange={creatorEsChange}
+              />
+            </Conditional>
           </Conditional>
 
           <Conditional
@@ -704,7 +854,7 @@ const RancanganForm = ({
               wrap="nowrap"
               container
               item
-              xs={3}
+              xs={4}
               alignItems="center"
               justify="space-around"
               style={{ height: 40 }}
@@ -714,63 +864,83 @@ const RancanganForm = ({
                   partner !== null &&
                   "partner : " + partner.name.substring(0, 15)
                 }
-                onDelete={removePartner}
+                onDelete={(action === "edit" || action === "create") && removePartner}
                 className={classes.chip}
                 color="primary"
               />
-              <TextField
-                id="partnerQuota"
-                value={partnerQuota}
-                margin="dense"
-                onChange={partnerQuotaChange}
-                variant="outlined"
-                type="number"
-                label="partner quota"
-                style={{ margin: "-1px 4px 0 4px", width: 100 }}
-              />
+
+              <Conditional
+                condition={
+                  quotaComposition.value === "M" ||
+                  quotaComposition.value === "C"
+                }
+              >
+                <TextField
+                  id="partnerMc"
+                  value={partnerMc}
+                  margin="dense"
+                  onChange={partnerMcChange}
+                  variant="outlined"
+                  type="number"
+                  label="partner MC"
+                  style={{ margin: "-1px 4px 0 4px", width: 100 }}
+                />
+              </Conditional>
+              <Conditional
+                condition={
+                  quotaComposition.value === "E" ||
+                  quotaComposition.value === "C"
+                }
+              >
+                <TextField
+                  id="partnerEs"
+                  value={partnerEs}
+                  margin="dense"
+                  onChange={partnerEsChange}
+                  variant="outlined"
+                  type="number"
+                  label="partner ES"
+                  style={{ margin: "-1px 4px 0 4px", width: 100 }}
+                />
+              </Conditional>
             </Grid>
           </Conditional>
 
-          <Conditional condition={action === "edit" || action === "create"}>
-            <Grid
-              container
-              item
-              xs={2}
-              alignItems="center"
-              style={{ height: 40 }}
-            >
-              <AddButton
-                text="Add Soal"
-                action={showAddSoal}
-                classes={common.marginX}
-              />
-            </Grid>
-          </Conditional>
-
+          <span style={{ color: "red", margin: "0 16px" }}>
+            {errorState.ejenjang ||
+              errorState.egrade ||
+              errorState.esubject ||
+              errorState.ebobot ||
+              errorState.equota}
+          </span>
           <Grid container justify="space-between" alignItems="center">
             <Grid item>
               <Typography variant="h5">status : {rancanganStatus}</Typography>
             </Grid>
 
             <Grid item>
-              <Protected current={currentAccess} only="A">
-                <ApproveButton
-                  tooltip="Approve"
-                  action={() => approved(rancangan.id)}
-                  classes={classes.floatButton}
-                />
+              <Conditional
+                condition={rancangan && rancangan.status.num_code !== 5}
+              >
+                <Protected current={currentAccess} only="A">
+                  <ApproveButton
+                    tooltip="Approve"
+                    action={() => approved(rancangan.id)}
+                    classes={classes.floatButton}
+                  />
 
-                <EditButton
-                  tooltip="Need Revision"
-                  action={() => openNotesBeforeAction(3)}
-                  classes={classes.floatButton}
-                />
-                <CancelButton
-                  tooltip="Reject"
-                  action={() => openNotesBeforeAction(4)}
-                  classes={classes.floatButton}
-                />
-              </Protected>
+                  <EditButton
+                    tooltip="Need Revision"
+                    action={() => openNotesBeforeAction(3)}
+                    classes={classes.floatButton}
+                  />
+                  <CancelButton
+                    tooltip="Reject"
+                    action={() => openNotesBeforeAction(4)}
+                    classes={classes.floatButton}
+                  />
+                </Protected>
+              </Conditional>
               <Protected current={currentAccess} access={["W", "A"]}>
                 <MailButton
                   tooltip="Create Notes"
@@ -780,16 +950,29 @@ const RancanganForm = ({
               </Protected>
             </Grid>
           </Grid>
+        </Grid>
+        <Grid container wrap="nowrap" className={common.paddingX}>
+          <Grid item container>
+            <InputText
+              input={title}
+              onChange={titleChange}
+              readOnly={action !== "edit" && action !== "create"}
+            />
+          </Grid>
+          <Grid item xs={2} container alignItems="center" justify="flex-end">
+            Total Bobot : {sumBobot("bobot")}
+          </Grid>
 
-          <span style={{ color: "red", margin: "0 16px" }}>
-            {errorState.ejenjang}
-          </span>
-          <span style={{ color: "red", margin: "0 16px" }}>
-            {errorState.egrade}
-          </span>
-          <span style={{ color: "red", margin: "0 16px" }}>
-            {errorState.esubject}
-          </span>
+          <Conditional condition={action === "edit" || action === "create"}>
+            <Grid item xs={3} container alignItems="center" justify="flex-end">
+              <Button variant="contained" color="primary" onClick={splitBobot}>
+                Samakan Bobot
+              </Button>
+            </Grid>
+            <Grid container item xs={2} alignItems="center" justify="center">
+              <AddButton text="Add Soal" action={showAddSoal} />
+            </Grid>
+          </Conditional>
         </Grid>
         <Grid
           container
@@ -836,7 +1019,8 @@ const RancanganForm = ({
                       variant="outlined"
                       type="number"
                       label="bobot"
-                      style={{ margin: "-1px 4px 0 4px", width: 60 }}
+                      style={{ margin: "-1px 4px 0 4px", width: 100 }}
+                      fullWidth
                     />
                   </TableCell>
                   <TableCell>
@@ -982,16 +1166,16 @@ const RancanganForm = ({
         <SoalForm action="detail" soal={soal} onClose={closeDetailSoal} />
       </TopDrawer>
 
-      <Notes open={openNotes} 
-      onClose={()=>setOpenNotes(false)} 
-      notesData={notesData} 
-      notesType={notesType}
-      notesTypeChange={notesTypeChange}
-      notesTypeOption={notesTypeOption}
-      onSubmit={sendNotes}
-      disabled={disableNoteTypeChange}
+      <Notes
+        open={openNotes}
+        onClose={() => setOpenNotes(false)}
+        notesData={notesData}
+        notesType={notesType}
+        notesTypeChange={notesTypeChange}
+        notesTypeOption={notesTypeOption}
+        onSubmit={sendNotes}
+        disabled={disableNoteTypeChange}
       />
-      
     </>
   );
 };

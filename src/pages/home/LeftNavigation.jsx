@@ -16,6 +16,7 @@ import Schedule from "@material-ui/icons/Schedule";
 import LocalLibrary from "@material-ui/icons/LocalLibrary";
 import Functions from "@material-ui/icons/Functions";
 import Drafts from "@material-ui/icons/Drafts";
+import ShowChart from "@material-ui/icons/ShowChart";
 import { withRouter } from "react-router";
 
 const LeftNavigation = props => {
@@ -46,7 +47,8 @@ const LeftNavigation = props => {
         return <LocalLibrary style={{ color: "#8c9497" }} />;
       case "functions":
         return <Functions style={{ color: "#8c9497" }} />;
-
+      case "show_chart":
+        return <ShowChart style={{ color: "#8c9497" }} />;
       default:
         return <BubbleChart style={{ color: "#8c9497" }} />;
     }

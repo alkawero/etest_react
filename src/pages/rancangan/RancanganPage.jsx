@@ -16,7 +16,7 @@ import IconButton from "@material-ui/core/IconButton";
 import Search from "@material-ui/icons/Search";
 import FlightTakeoff from "@material-ui/icons/FlightTakeoff";
 import ArrowForward from "@material-ui/icons/ArrowForward";
-
+import Conditional from "components/Conditional";
 import TopDrawer from "components/TopDrawer";
 import RancanganForm from "./RancanganForm";
 import Select from "react-select";
@@ -35,12 +35,11 @@ import RefreshButton from "components/RefreshButton";
 import DetailButton from "components/DetailButton";
 import PopUp from "components/PopUp";
 import { UserProvider } from "contexts/UserContext";
-import Tooltip  from "@material-ui/core/Tooltip";
+import Tooltip from "@material-ui/core/Tooltip";
 import { useSelector } from "react-redux";
 
 const RancanganPage = props => {
-  
-  const user = useSelector(state => state.user);  
+  const user = useSelector(state => state.user);
   const ui = useSelector(state => state.ui);
   const [openTopDrawer, setOpenTopDrawer] = useState(false);
   const [topDrawerTittle, setTopDrawerTittle] = useState("");
@@ -133,7 +132,7 @@ const RancanganPage = props => {
   };
 
   const getRancangan = async () => {
-    let params = { pageNum: rowsPerHalaman,user_id:user.id };
+    let params = { pageNum: rowsPerHalaman, user_id: user.id };
     if (filterJenjang !== null) {
       params = { ...params, jenjang: filterJenjang.value };
     }
@@ -236,31 +235,29 @@ const RancanganPage = props => {
     getRancangan();
   };
 
-  const sendToReviewer = async (id) => {
-      const params = {id:id,status:1}
+  const sendToReviewer = async id => {
+    const params = { id: id, status: 1 };
     await doPost("rancangan/review", params, "send to reviewer");
     setRefresh(refresh + 1);
-  }
+  };
 
-  const approved = async(id) => {
-    const params = {id:id,status:3}
+  const approved = async id => {
+    const params = { id: id, status: 3 };
     await doPatch("rancangan/status", params, "verified by reviewer");
     setRefresh(refresh + 1);
-  }
+  };
 
-  const rejected   = async(id) => {
-    const params = {id:id,status:5}
+  const rejected = async id => {
+    const params = { id: id, status: 5 };
     await doPatch("rancangan/status", params, "rejected by reviewer");
     setRefresh(refresh + 1);
-  }
+  };
 
-  const revision   = async(id) => {
-    const params = {id:id,status:4}
+  const revision = async id => {
+    const params = { id: id, status: 4 };
     await doPatch("rancangan/status", params, "need for revision");
     setRefresh(refresh + 1);
-  }
-  
-  
+  };
 
   const currentAccess = ui.active_page.access;
 
@@ -272,7 +269,6 @@ const RancanganPage = props => {
         justify="space-between"
         className={classes.header}
       >
-         
         <Grid item xs={10} sm={6} className={classes.headerTittle}>
           <Typography variant="h6">{ui.active_page.tittle}</Typography>
         </Grid>
@@ -299,11 +295,10 @@ const RancanganPage = props => {
               classes={classes.bigAddButton}
             />
           </Protected>
-          
         </Grid>
       </Grid>
       <Grid container justify="center" className={classes.content_wrapper}>
-        <Grid container className={classes.content}>        
+        <Grid container className={classes.content}>
           <Grid
             item
             xs={12}
@@ -353,35 +348,39 @@ const RancanganPage = props => {
                             classes={classes.floatButton}
                           />
                         </Protected>
-                        <Protected current={currentAccess} only="W">
-                        <Tooltip title='send to reviewer'>
-                          <IconButton
-                            aria-label="send-to-reviewer"
-                            className={classes.floatButton}
-                            onClick={()=>sendToReviewer(row.id)}
-                          >
-                            <FlightTakeoff fontSize="small" />
-                          </IconButton>
-                          </Tooltip>
-                        </Protected>
-                        <Protected current={currentAccess} only="A">
-                        <ApproveButton
-                            tooltip="Approve"
-                            action={()=>approved(row.id)}
-                            classes={classes.floatButton}
-                          />
-                        
-                        <EditButton
-                            tooltip="Need Revision"
-                            action={()=>revision(row.id)}
-                            classes={classes.floatButton}
-                          />
-                          <CancelButton
-                            tooltip="Reject"
-                            action={()=>rejected(row.id)}
-                            classes={classes.floatButton}
-                          />                          
-                        </Protected>
+                        <Conditional condition={row.status.num_code !== 5}>
+                          <Conditional condition={row.status.num_code !== 1}>
+                            <Protected current={currentAccess} only="W">
+                              <Tooltip title="send to reviewer">
+                                <IconButton
+                                  aria-label="send-to-reviewer"
+                                  className={classes.floatButton}
+                                  onClick={() => sendToReviewer(row.id)}
+                                >
+                                  <FlightTakeoff fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                            </Protected>
+                          </Conditional>
+                          <Protected current={currentAccess} only="A">
+                            <ApproveButton
+                              tooltip="Approve"
+                              action={() => approved(row.id)}
+                              classes={classes.floatButton}
+                            />
+
+                            <EditButton
+                              tooltip="Need Revision"
+                              action={() => revision(row.id)}
+                              classes={classes.floatButton}
+                            />
+                            <CancelButton
+                              tooltip="Reject"
+                              action={() => rejected(row.id)}
+                              classes={classes.floatButton}
+                            />
+                          </Protected>
+                        </Conditional>
                       </div>
                       {row.exam_type.char_code}
                     </TableCell>
@@ -492,7 +491,5 @@ const RancanganPage = props => {
     </UserProvider>
   );
 };
-
-
 
 export default RancanganPage;

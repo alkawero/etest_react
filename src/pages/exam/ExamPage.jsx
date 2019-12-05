@@ -3,6 +3,7 @@ author alka@2019
 */
 import React, { useState, useEffect } from "react";
 import { doSilentPost } from "apis/api-service";
+import { finishExam} from "reduxs/actions";
 import clsx from "clsx";
 import { useInterval } from "react-use";
 import Grid from "@material-ui/core/Grid";
@@ -10,7 +11,7 @@ import useStyles from "./examStyle";
 import { useCommonStyles } from "themes/commonStyle";
 import Button from "@material-ui/core/Button";
 import { withRouter } from "react-router";
-import { useSelector } from "react-redux";
+import { useSelector,useDispatch } from "react-redux";
 import Typography from "@material-ui/core/Typography";
 import Badge from "@material-ui/core/Badge";
 import addMinutes from "date-fns/addMinutes";
@@ -31,6 +32,7 @@ import { Tooltip } from "@material-ui/core";
 
 const ExamPage = props => {
   const c = useStyles();
+  const dispatch = useDispatch();
   const common = useCommonStyles();
   const exam = useSelector(state => state.exam);
   const user = useSelector(state => state.user);
@@ -107,6 +109,11 @@ const ExamPage = props => {
   }, 5000);
 
   const ForcedFinish = () => {
+    const params ={
+      exam_id:exam.exam_data.id,
+      exam_account_num:user.name
+    }
+    dispatch(finishExam(params))
     setOpenModal(false);
     props.history.push("/");
   };
@@ -426,6 +433,9 @@ const ExamPage = props => {
                     <Grid item>
                       <Conditional condition={option.content_type === 1}>
                         {option.content}
+                      </Conditional>
+                      <Conditional condition={option.content_type === 2}>                        
+                        <div dangerouslySetInnerHTML={{__html: option.content}}></div>
                       </Conditional>
                       <Conditional condition={option.content_type === 3}>
                         <MathDisplay value={option.content} />
