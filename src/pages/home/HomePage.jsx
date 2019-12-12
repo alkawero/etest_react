@@ -19,7 +19,7 @@ import MenuIcon from '@material-ui/icons/Menu';
 import Typography from '@material-ui/core/Typography';
 import LeftNavigation from './LeftNavigation';
 import {isLogged} from 'utils/Auths'
-import MainComponentLoader from 'components/MainComponentLoader';
+
 import FullMenu from './FullMenu';
 import PopUp  from 'components/PopUp';
 import Button  from '@material-ui/core/Button';
@@ -36,6 +36,8 @@ const Dashboard =  lazy(() => import('pages/dashboard/Dashboard'))
 const ReviewerPage =  lazy(() => import('pages/reviewer/ReviewerPage'))
 const MathPage =  lazy(() => import('pages/math/MathPage'))
 const StatisticPage =  lazy(() => import('pages/statistic/StatisticPage'))
+const ResultMainPage =  lazy(() => import('pages/result/ResultMainPage'))
+const LogPage =  lazy(() => import('pages/log/LogPage'))
 
 
 
@@ -118,8 +120,8 @@ const HomePage = (props) => {
                             </IconButton>
                         </Hidden>                        
                     </Grid>
-                    <Grid container className={classes.main}>                        
-                        <Suspense fallback={<MainComponentLoader/>}>
+                    <Grid container className={classes.main}>                
+                        
                             <Switch>
                                 <Route exact path='/' component={Dashboard} />   
                                 <Route exact path='/home' component={Dashboard} />   
@@ -132,10 +134,10 @@ const HomePage = (props) => {
                                 <Route path='/home/reviewer' component={ReviewerPage} /> 
                                 <Route path='/home/math' component={MathPage} /> 
                                 <Route path='/home/statistic' component={StatisticPage} /> 
-                                
-                                                              
+                                <Route path='/home/result' component={ResultMainPage} /> 
+                                <Route path='/home/log' component={LogPage} /> 
                             </Switch>             
-                        </Suspense>
+                        
                     </Grid>
                      
                 </Grid>

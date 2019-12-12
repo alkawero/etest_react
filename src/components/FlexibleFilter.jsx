@@ -5,14 +5,13 @@ import Grid  from '@material-ui/core/Grid';
 import IconButton  from '@material-ui/core/IconButton';
 import ArrowForward from '@material-ui/icons/ArrowForward';
 import Clear from '@material-ui/icons/Clear';
-import { doGet} from 'apis/api-service';
 import TextField  from '@material-ui/core/TextField';
 import Select from 'react-select';
 
-const FlexibleFilter = ({anchor,position,setData,path,filters,setFilterParams}) => {
+const FlexibleFilter = ({anchor,position,filters,action}) => {
     const classes = useStyles()
     
-    const   placeholders = filters.map(filter => (filter.placeholder) )
+    const   placeholders = filters.map(filter => (filter.as_param) )
                             .reduce((accumulator, currentValue) => {
                                 accumulator[currentValue] = '';
                                 return accumulator;
@@ -21,9 +20,9 @@ const FlexibleFilter = ({anchor,position,setData,path,filters,setFilterParams}) 
     
     
     const go = async()=>{        
+        
         let filtered = false
         let reducedState = {...state}
-        setFilterParams({})
         for (var key in state) {
             if(state[key]!==null){
                 if(typeof state[key]=== 'object'){
@@ -38,16 +37,14 @@ const FlexibleFilter = ({anchor,position,setData,path,filters,setFilterParams}) 
         }        
         if(filtered===true){
             const params    =   {...reducedState,pageNum:100}
-            setFilterParams(params)
-            const response  =   await doGet(path,params)
-            setData(response.data.data)        
+            action(params)        
         }
         
+                
         
     }
 
     const clear = ()=>{
-        setFilterParams({})
         let clearedState = {...state}
         for (var key in state) {
             if(state[key]!==null){

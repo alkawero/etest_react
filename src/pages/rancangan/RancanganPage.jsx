@@ -37,6 +37,7 @@ import PopUp from "components/PopUp";
 import { UserProvider } from "contexts/UserContext";
 import Tooltip from "@material-ui/core/Tooltip";
 import { useSelector } from "react-redux";
+import Notes from "components/Notes";
 
 const RancanganPage = props => {
   const user = useSelector(state => state.user);
@@ -44,6 +45,46 @@ const RancanganPage = props => {
   const [openTopDrawer, setOpenTopDrawer] = useState(false);
   const [topDrawerTittle, setTopDrawerTittle] = useState("");
   const [TopDrawerContent, setTopDrawerContent] = useState(null);
+  const [selectedRancangan, setSelectedRancangan] = useState(null);
+  const [openNotes, setOpenNotes] = useState(false);
+  const [notesData, setNotesData] = useState([]);
+  const [notesType, setNotesType] = useState(1);
+  const [disableNoteTypeChange, setDisableNoteTypeChange] = useState(false);
+  const notesTypeOption = [
+    { value: 1, label: "Notes" },
+    { value: 3, label: "Revision Reason" },
+    { value: 4, label: "Reject Reason" }
+  ];
+
+  const sendNotes = async notes => {
+    let to_role = null;
+    let to_person = selectedRancangan.creator_id;
+
+    const params = {
+      note_type_code: notesType,
+      text: notes,
+      from: user.id,
+      to_person: to_person,
+      to_role: to_role,
+      object_id: selectedRancangan.id,
+      status: 0
+    };
+
+    await doPost("note", params, "note saved");
+
+    if (notesType === 3) {
+      revision(notes);
+    } else if (notesType === 4) {
+      rejected(notes);
+    }
+    setOpenNotes(false);
+  };
+  const openNotesBeforeAction = (rancangan, notesType) => {
+    setSelectedRancangan(rancangan);
+    setOpenNotes(true);
+    setNotesType(notesType);
+    setDisableNoteTypeChange(true);
+  };
 
   const [filterAnchor, setFilterAnchor] = useState(null);
   const [dataJenjang, setDataJenjang] = useState([]);
@@ -236,26 +277,34 @@ const RancanganPage = props => {
   };
 
   const sendToReviewer = async id => {
-    const params = { id: id, status: 1 };
+    const params = { sender: user.id, id: id, status: 1 };
     await doPost("rancangan/review", params, "send to reviewer");
     setRefresh(refresh + 1);
   };
 
   const approved = async id => {
-    const params = { id: id, status: 3 };
-    await doPatch("rancangan/status", params, "verified by reviewer");
+    const params = { id: id, approve_by: user.id };
+    await doPatch("rancangan/approve", params, "verified by reviewer");
     setRefresh(refresh + 1);
   };
 
-  const rejected = async id => {
-    const params = { id: id, status: 5 };
-    await doPatch("rancangan/status", params, "rejected by reviewer");
+  const rejected = async notes => {
+    const params = {
+      id: selectedRancangan.id,
+      reject_by: user.id,
+      notes: notes
+    };
+    await doPatch("rancangan/reject", params, "rejected by reviewer");
     setRefresh(refresh + 1);
   };
 
-  const revision = async id => {
-    const params = { id: id, status: 4 };
-    await doPatch("rancangan/status", params, "need for revision");
+  const revision = async notes => {
+    const params = {
+      id: selectedRancangan.id,
+      revise_by: user.id,
+      notes: notes
+    };
+    await doPatch("rancangan/revise", params, "need for revision");
     setRefresh(refresh + 1);
   };
 
@@ -334,14 +383,22 @@ const RancanganPage = props => {
                             classes={classes.floatButton}
                           />
                         </Protected>
-                        <Protected current={currentAccess} only="W">
-                          <EditButton
-                            tooltip="edit"
-                            action={() => edit(row)}
-                            classes={classes.floatButton}
-                          />
-                        </Protected>
-                        <Protected current={currentAccess} only="D">
+                        <Conditional condition={row.status.num_code !== 5}>
+                          <Protected current={currentAccess} only="W">
+                            <EditButton
+                              tooltip="edit"
+                              action={() => edit(row)}
+                              classes={classes.floatButton}
+                            />
+                          </Protected>
+                        </Conditional>
+                        <Protected
+                          current={currentAccess}
+                          only="D"
+                          ownerOnly={true}
+                          current_user={user.id}
+                          owner={row.creator_id}
+                        >
                           <DeleteButton
                             tooltip="delete"
                             action={() => deleteById(row)}
@@ -371,12 +428,12 @@ const RancanganPage = props => {
 
                             <EditButton
                               tooltip="Need Revision"
-                              action={() => revision(row.id)}
+                              action={() => openNotesBeforeAction(row, 3)}
                               classes={classes.floatButton}
                             />
                             <CancelButton
                               tooltip="Reject"
-                              action={() => rejected(row.id)}
+                              action={() => openNotesBeforeAction(row, 4)}
                               classes={classes.floatButton}
                             />
                           </Protected>
@@ -488,6 +545,16 @@ const RancanganPage = props => {
           </Grid>
         </Grid>
       </PopUp>
+
+      <Notes
+        open={openNotes}
+        onClose={() => setOpenNotes(false)}
+        notesData={notesData}
+        notesType={notesType}
+        notesTypeOption={notesTypeOption}
+        onSubmit={sendNotes}
+        disabled={disableNoteTypeChange}
+      />
     </UserProvider>
   );
 };

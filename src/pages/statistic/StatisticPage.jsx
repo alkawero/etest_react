@@ -1,15 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { connect } from "react-redux";
 import clsx from "clsx";
 import { showSnackbar } from "reduxs/actions";
 import useStyles from "./statisticStyle";
 import { useCommonStyles } from "themes/commonStyle";
-import AppBar from "@material-ui/core/AppBar";
 import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
 import Typography from "@material-ui/core/Typography";
 import Box from "@material-ui/core/Box";
-import { doGet, doPost, doDelete, doPut, doPatch } from "apis/api-service";
 import Grid from "@material-ui/core/Grid";
 
 const StatisticPage = props => {

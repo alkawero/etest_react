@@ -135,7 +135,7 @@ const RancanganForm = ({
   const [soalQuota, setSoalQuota] = useState(10);
   const soalQuotaChange = e => {
     const value = parseInt(e.target.value);
-    if (action === "edit" || action === "create") {
+    if ((action === "edit" || action === "create")&& isCreator()) {
       if (value > 0) {
         setSoalQuota(value);
         setPartnerMc(0);
@@ -159,7 +159,7 @@ const RancanganForm = ({
   const [creatorMc, setCreatorMc] = useState(6);
   const creatorMcChange = e => {
     const creatorMcValue = parseInt(e.target.value);
-    if (action === "edit" || action === "create") {
+    if ((action === "edit" || action === "create") && isCreator()) {
       if (creatorMcValue <= mcComposition && creatorMcValue > 0) {
         setCreatorMc(creatorMcValue);
         setPartnerMc(mcComposition - creatorMcValue);
@@ -169,8 +169,8 @@ const RancanganForm = ({
   const [creatorEs, setCreatorEs] = useState(4);
   const creatorEsChange = e => {
     const creatorEsValue = parseInt(e.target.value);
-    if (action === "edit" || action === "create") {
-      if (creatorEsValue <= esComposition && creatorEsValue > 0) {
+    if ((action === "edit" || action === "create") && isCreator()) {
+      if (creatorEsValue <= esComposition && creatorEsValue > 0 ) {
         setCreatorEs(creatorEsValue);
         setPartnerEs(esComposition - creatorEsValue);
       }
@@ -179,8 +179,8 @@ const RancanganForm = ({
   const [partnerMc, setPartnerMc] = useState(0);
   const partnerMcChange = e => {
     const value = parseInt(e.target.value);
-    if (action === "edit" || action === "create") {
-      if (value <= mcComposition && value > 0) {
+    if ((action === "edit" || action === "create") && isCreator()) {
+      if (value <= mcComposition && value > 0 ) {
         setPartnerMc(value);
         setCreatorMc(mcComposition - value);
       }
@@ -189,8 +189,8 @@ const RancanganForm = ({
   const [partnerEs, setPartnerEs] = useState(0);
   const partnerEsChange = e => {
     const value = parseInt(e.target.value);
-    if (action === "edit" || action === "create") {
-      if (value <= esComposition && value > 0) {
+    if ((action === "edit" || action === "create") && isCreator()) {
+      if (value <= esComposition && value > 0 ) {
         setPartnerEs(value);
         setCreatorEs(esComposition - value);
       }
@@ -209,7 +209,7 @@ const RancanganForm = ({
     label: "multiple choice"
   });
   const quotaCompositionChange = e => {
-    if (action === "edit" || action === "create") {
+    if ((action === "edit" || action === "create") && isCreator()) {
       setQuotaComposition(e);
       if (e.value === "M") {
         setMcComposition(soalQuota);
@@ -233,25 +233,47 @@ const RancanganForm = ({
   const [mcComposition, setMcComposition] = useState(6);
   const mcCompositionChange = e => {
     const value = parseInt(e.target.value);
-    if (action === "edit" || action === "create") {
+    if ((action === "edit" || action === "create") && isCreator()) {
       if (value < soalQuota && value > 0) {
         setMcComposition(value);
         setEsComposition(soalQuota - value);
         setCreatorMc(value);
         setCreatorEs(soalQuota - value);
+        setPartnerMc(0)
+        setPartnerEs(0)
       }
     }
   };
 
+  const isCreator = () =>{
+    if(partner!==null && partner.id===user.id){
+      return false
+    }
+    else {
+      return true
+    }
+
+  }
+
+  const isMine = (owner_id) =>{
+    if(owner_id === user.id){
+      return true
+    }    
+    return false   
+
+  }
+
   const [esComposition, setEsComposition] = useState(4);
   const esCompositionChange = e => {
     const value = parseInt(e.target.value);
-    if (action === "edit" || action === "create") {
+    if ((action === "edit" || action === "create") && isCreator() ) {
       if (value < soalQuota && value > 0) {
         setEsComposition(value);
         setMcComposition(soalQuota - value);
         setCreatorEs(value);
         setCreatorMc(soalQuota - value);
+        setPartnerMc(0)
+        setPartnerEs(0)
       }
     }
   };
@@ -260,7 +282,7 @@ const RancanganForm = ({
 
   const [partner, setPartner] = useState(null);
   const addPartner = user => {
-    if (action === "edit" || action === "create") {
+    if ((action === "edit" || action === "create") && isCreator()) {
     setPartner({ id: user.id, name: user.text });
     setCollaboration("P");
     setPopUpAnchor(null);
@@ -268,7 +290,7 @@ const RancanganForm = ({
   };
 
   const removePartner = user => {
-    if (action === "edit" || action === "create") {
+    if ((action === "edit" || action === "create") && isCreator()) {
     setPartner(null);
     setCollaboration("F");
     setPartnerQuota(0);
@@ -291,7 +313,7 @@ const RancanganForm = ({
   const [dataSubject, setDataSubject] = useState([]);
   const [subject, setSubject] = useState(null);
   const subjectChange = e => {
-    if (action === "edit" || action === "create") {
+    if ((action === "edit" || action === "create") && isCreator()) {
       setSubject(e);
       setSelectedSoal([]);
     }
@@ -307,7 +329,7 @@ const RancanganForm = ({
   const [dataExamType, setDataExamType] = useState([]);
   const [examType, setExamType] = useState(null);
   const examTypeChange = e => {
-    if (action === "edit" || action === "create") setExamType(e);
+    if ((action === "edit" || action === "create") && isCreator()) setExamType(e);
   };
   const getDataExamType = async () => {
     const params = { group: "exam_type" };
@@ -320,7 +342,7 @@ const RancanganForm = ({
   const [dataJenjang, setDataJenjang] = useState([]);
   const [jenjang, setJenjang] = useState(null);
   const jenjangChange = e => {
-    if (action === "edit" || action === "create") setJenjang(e);
+    if ((action === "edit" || action === "create") && isCreator()) setJenjang(e);
   };
 
   const getDataJenjang = async () => {
@@ -334,7 +356,7 @@ const RancanganForm = ({
   const [dataGrade, setDataGrade] = useState([]);
   const [grade, setGrade] = useState(null);
   const gradeChange = e => {
-    if (action === "edit" || action === "create") setGrade(e);
+    if ((action === "edit" || action === "create") && isCreator()) setGrade(e);
   };
   const getDataGrade = async () => {
     if (jenjang !== null) {
@@ -407,8 +429,10 @@ const RancanganForm = ({
       setPartnerQuota(rancangan.partner_quota);
       const sorted = sortBy(rancangan.soals, soal => soal.no);
       setSelectedSoal(sorted);
-      setRancanganStatus(rancangan.status.value);
+      setRancanganStatus(rancangan.status.value);      
     }
+
+    
   }, [rancangan]);
 
   useUpdateEffect(() => {
@@ -476,15 +500,13 @@ const RancanganForm = ({
   const chooseSoal = soal => {
     const mySoal = getSoalByMe();
     let quotaSoal = 0;
-    if (partner !== null) {
-      if (partner.id === user.id) {
-        quotaSoal = partnerMc + partnerEs;
+    
+      if (isCreator()) {
+        quotaSoal = creatorMc + creatorEs;        
       } else {
-        quotaSoal = creatorMc + creatorEs;
+        quotaSoal = partnerMc + partnerEs;
       }
-    }else{
-      quotaSoal = soalQuota
-    }
+    
 
     if (quotaSoal > mySoal.length) {
       const soalByMe = { ...soal, add_by: user.id };
@@ -524,8 +546,8 @@ const RancanganForm = ({
   };
 
   const approved = async id => {
-    const params = { id: id, status: 3 };
-    await doPatch("rancangan/status", params, "verified by reviewer");
+    const params = { id: id, approve_by: user.id };
+    await doPatch("rancangan/approve", params, "verified by reviewer");
     setRancanganStatus("Verified");
   };
 
@@ -534,15 +556,15 @@ const RancanganForm = ({
     setNotesType(notesType);
     setDisableNoteTypeChange(true);
   };
-  const rejected = async () => {
-    const params = { id: rancangan.id, status: 5 };
-    await doPatch("rancangan/status", params, "rejected by reviewer");
+  const rejected = async (notes) => {
+    const params = { id: rancangan.id, reject_by: user.id, notes : notes };
+    await doPatch("rancangan/reject", params, "rejected by reviewer");
     setRancanganStatus("Rejected");
   };
 
-  const revision = async () => {
-    const params = { id: rancangan.id, status: 4 };
-    await doPatch("rancangan/status", params, "need for revision");
+  const revision = async (notes) => {
+    const params = { id: rancangan.id, revise_by: user.id,notes : notes };
+    await doPatch("rancangan/revise", params, "need for revision");
     setRancanganStatus("Need Revision");
   };
 
@@ -550,7 +572,7 @@ const RancanganForm = ({
     setNotesType(1)
     setOpenNotes(true);
     getNotesData();
-    setDisableNoteTypeChange(false);
+    setDisableNoteTypeChange(true);
   };
 
   const sendNotes = async notes => {
@@ -577,15 +599,16 @@ const RancanganForm = ({
     getNotesData();
 
     if (notesType === 3) {
-      revision();
+      revision(notes);
     } else if (notesType === 4) {
-      rejected();
+      rejected(notes);
     }
     setNotesType(1)
   };
 
   const getSoalByMe = () => {
-    return selectedSoal.filter(soal => soal.add_by === user.id);
+    const byMe = selectedSoal.filter(soal => soal.add_by === user.id);    
+    return byMe
   };
 
   const submit = () => {
@@ -609,13 +632,12 @@ const RancanganForm = ({
 
     const soalByMe = getSoalByMe();
     let quotaSoal = 0;
-    if (partner !== null) {
-      if (partner.id === user.id) {
-        quotaSoal = partnerMc + partnerEs;
-      } else {
-        quotaSoal = creatorMc + creatorEs;
-      }
+    if (isCreator()) {
+      quotaSoal = creatorMc + creatorEs;        
+    } else {
+      quotaSoal = partnerMc + partnerEs;
     }
+    
     if (soalByMe.length !== quotaSoal) {
       errors = {
         ...errors,
@@ -647,8 +669,7 @@ const RancanganForm = ({
         mc_partner: partnerMc,
         es_partner: partnerEs,
         collaboration_type: collaboration,
-        partner_quota: partnerQuota,
-        creator: user.id,
+        partner_quota: partnerQuota,        
         status: status,
         exam_type_code: examType.value
       };
@@ -661,15 +682,16 @@ const RancanganForm = ({
         id: soal.id,
         bobot: soal.bobot,
         soal_num: soal.no,
-        add_by: user.id
+        add_by: soal.add_by
       }));
 
       newRancangan = { ...newRancangan, soals: soals };
 
       if (rancangan) {
-        newRancangan = { ...newRancangan, id: rancangan.id };
-        update(newRancangan);
+        const updatedRancangan = { ...newRancangan, id: rancangan.id };
+        update(updatedRancangan);
       } else {
+        newRancangan = { ...newRancangan, creator: user.id }
         create(newRancangan);
       }
 
@@ -864,7 +886,7 @@ const RancanganForm = ({
                   partner !== null &&
                   "partner : " + partner.name.substring(0, 15)
                 }
-                onDelete={(action === "edit" || action === "create") && removePartner}
+                onDelete={isCreator() && (action === "edit" || action === "create") && removePartner}
                 className={classes.chip}
                 color="primary"
               />
@@ -1031,7 +1053,7 @@ const RancanganForm = ({
                         classes={classes.floatButton}
                       />
                       <Conditional
-                        condition={action === "edit" || action === "create"}
+                        condition={(action === "edit" || action === "create") && isMine(row.add_by)}
                       >
                         <Protected current={currentAccess} only="D">
                           <DeleteButton

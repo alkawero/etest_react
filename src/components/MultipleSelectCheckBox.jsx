@@ -29,16 +29,9 @@ const MultipleSelectCheckBox = ({
     setAvailableData(
       options.filter(option => !selectedIds.includes(option.id))
     );
-  }, [value]);
+  }, [value, options]);
 
-  useEffect(() => {
-    const ids = value.map(data => data.id);
-    setAvailableData(options.filter(data => !ids.includes(data.id)));
-  }, [options]);
-
-  const handleDelete = obj => {
-    onChange(value.filter(data => data.id != obj.id));
-  };
+  
 
   const onChoose = obj => {
     if (!readOnly) {
@@ -104,8 +97,7 @@ const MultipleSelectCheckBox = ({
           ))}
 
           {extraAction && extraCommand && (
-            <Grid container justify='center'>
-              
+            <Grid container justify="center">
               <Button onClick={extraAction} variant="contained" color="primary">
                 {" "}
                 {extraCommand}{" "}

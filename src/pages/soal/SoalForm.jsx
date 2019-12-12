@@ -294,7 +294,7 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
     }
   };
 
-  const [dataContentTypes, setDataContentTypes] = useState([]);
+  const [dataContentTypes, setDataContentTypes] = useState([{id:1,code:1,value:'loading'}]);
   const getDataContentTypes = async () => {
     const params = { group: "content_type" };
     const response = await doGet("param", params);
@@ -319,6 +319,7 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
   }, []);
 
   useEffect(() => {
+    
     if (soal) {
       setExternal(soal.external);
       setJenjang({
@@ -411,6 +412,7 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
         setMathQuestion(soal.content);
       }
     }
+
   }, [soal]);
 
   useUpdateEffect(() => {

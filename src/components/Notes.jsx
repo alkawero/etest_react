@@ -69,7 +69,7 @@ const Notes = ({ disabled,open, onClose, notesData, notesType,notesTypeChange, n
         >
           {
               notesTypeOption.map(type=>(
-            <MenuItem value={type.value}>{type.label}</MenuItem>
+            <MenuItem key={type.value} value={type.value}>{type.label}</MenuItem>
           ))  
           }
         </Select>

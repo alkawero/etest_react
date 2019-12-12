@@ -48,9 +48,9 @@ const ParamPage = (props) => {
     const [totalRows, setTotalRows] = useState(0)
     const [paramGroups, setParamGroups] = useState([])
     const [filters, setFilters] = useState([
-        {type:'simple-select',data:[],placeholder:'group'},
-        {type:'simple-text',placeholder:'key'}, 
-        {type:'simple-text',placeholder:'value'},        
+        {type:'simple-select',data:[],placeholder:'group', as_params:'group'},
+        {type:'simple-text',placeholder:'key', as_params:'key'}, 
+        {type:'simple-text',placeholder:'value',as_params:'value'},        
     ])
 
     const md = useMediaQuery('(min-width:570px)');
@@ -64,7 +64,7 @@ const ParamPage = (props) => {
     },[]);
 
     useEffect(() => {
-        getData()
+        getData(filterParams)
     },[refresh,rowsPerHalaman,halaman]);
     
 
@@ -87,8 +87,8 @@ const ParamPage = (props) => {
         setRefresh(refresh+1)
     }
     
-    const getData = async()=>{
-        const params={pageNum:rowsPerHalaman,...filterParams}
+    const getData = async(paramsFromFilter)=>{
+        const params={pageNum:rowsPerHalaman,...paramsFromFilter}
         const response = await doGet('param?page='+halaman,params)
         if(!response.error){
             setTotalRows(response.data.total)
@@ -254,9 +254,7 @@ const ParamPage = (props) => {
             anchor={filterAnchor} 
             position='left'
             filters={filters}
-            path='param'
-            setData={setData}
-            setFilterParams={setFilterParams}
+            action={getData}            
         />
         </>
     )

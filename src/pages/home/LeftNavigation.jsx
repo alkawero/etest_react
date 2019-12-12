@@ -14,7 +14,9 @@ import InsertDriveFile from "@material-ui/icons/InsertDriveFile";
 import SettingsApplications from "@material-ui/icons/SettingsApplications";
 import Schedule from "@material-ui/icons/Schedule";
 import LocalLibrary from "@material-ui/icons/LocalLibrary";
+import BarChart from "@material-ui/icons/BarChart";
 import Functions from "@material-ui/icons/Functions";
+import Book from "@material-ui/icons/Book";
 import Drafts from "@material-ui/icons/Drafts";
 import ShowChart from "@material-ui/icons/ShowChart";
 import { withRouter } from "react-router";
@@ -49,6 +51,10 @@ const LeftNavigation = props => {
         return <Functions style={{ color: "#8c9497" }} />;
       case "show_chart":
         return <ShowChart style={{ color: "#8c9497" }} />;
+      case "bar_chart":
+        return <BarChart style={{ color: "#8c9497" }} />;
+      case "book":
+        return <Book style={{ color: "#8c9497" }} />;
       default:
         return <BubbleChart style={{ color: "#8c9497" }} />;
     }

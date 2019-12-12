@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Grid from "@material-ui/core/Grid";
 import useStyles from "./reviewerStyle";
 import Button from "@material-ui/core/Button";
-import { doGet, doPost, doDelete, doPut, doPatch } from "apis/api-service";
+import { doGet } from "apis/api-service";
 import SearchListAsync from "components/SearchListAsync";
 import Conditional from "components/Conditional";
 import { Typography, IconButton } from "@material-ui/core";
@@ -12,8 +12,7 @@ import { selectCustomZindex } from "themes/commonStyle";
 
 const ReviewerForm = ({ action, reviewer, create, update, onClose }) => {
   const classes = useStyles();
-  const [user, setUser] = useState(null);
-  const [popUpAnchor, setPopUpAnchor] = useState(null);
+  const [user, setUser] = useState(null);  
   const [subject, setSubject] = useState(null);
 
   const [dataJenjang, setDataJenjang] = useState([]);

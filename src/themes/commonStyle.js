@@ -58,7 +58,22 @@ export const useCommonStyles = makeStyles(theme => ({
     
     success:{
         backgroundColor:'#15cd8f'
-    }
+    },
+    headerIconButton:{
+        color:'white',
+        padding:8 
+    },
+    filterContainer:{
+        padding:8,
+        width:850,
+    },
+    fullFilterContainer:{
+        padding:8,
+        width:1000,
+    },
+    table_header:{
+        backgroundColor:'#f5f5f5',        
+    },
     
         
     
@@ -80,3 +95,25 @@ export const useCommonStyles = makeStyles(theme => ({
         })
     }
 };
+
+export const selectCustomSize = {
+    control: (base, state) => ({
+      ...base,
+      height: '40px',
+      minHeight: '40px',
+      minWidth:'200px',
+      marginTop:'2px',      
+    }),
+};
+
+export const selectFullSize = {
+    container: (base, state) => {
+        return ({
+            ...base,
+            flex: 'auto',            
+        })
+    }
+};
+
+
+

@@ -178,10 +178,11 @@ const useStyles = makeStyles(theme => ({
     height: "100vh"
   },
   image: {
-    backgroundImage: "url(https://source.unsplash.com/random)",
+    backgroundImage: "url(/assets/imgs/login_bg.jpg)",
     backgroundRepeat: "no-repeat",
     backgroundSize: "cover",
-    backgroundPosition: "center"
+    backgroundPosition: "center",
+    transform: 'rotate(180deg)'
   },
   paper: {
     margin: theme.spacing(8, 4),

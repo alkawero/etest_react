@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useInterval, useUpdateEffect } from "react-use";
 import { getExamsData, setActivePage } from "reduxs/actions";
 import { withRouter } from "react-router";
-import { doGet,doPatch } from "apis/api-service";
+import { doGet, doPatch } from "apis/api-service";
 import useStyles from "./dashboardStyle";
 import { useCommonStyles } from "themes/commonStyle";
 import clsx from "clsx";
@@ -25,21 +25,16 @@ import isToday from "date-fns/isToday";
 import Conditional from "components/Conditional";
 import Protected from "components/Protected";
 import formatDistance from "date-fns/formatDistance";
-import Hidden from '@material-ui/core/Hidden';
-import {
-  MuiPickersUtilsProvider,  
-  KeyboardDatePicker,DatePicker
-} from "@material-ui/pickers";
+import Hidden from "@material-ui/core/Hidden";
+import { MuiPickersUtilsProvider, DatePicker } from "@material-ui/pickers";
 import DateFnsUtils from "@date-io/date-fns";
 import { useDispatch, useSelector } from "react-redux";
-
 
 const Dashboard = props => {
   const classes = useStyles();
   const common = useCommonStyles();
   const dispatch = useDispatch();
   const user = useSelector(state => state.user);
-  const exam_redux = useSelector(state => state.exam);
   const ui = useSelector(state => state.ui);
 
   const [examData, setExamData] = useState([]);
@@ -66,31 +61,15 @@ const Dashboard = props => {
     );
   };
 
-  useInterval(
-    () => {      
-      if(ui.active_page.access.includes('E'))  
-      getExam()        
-    },
-    2000
-  );
-
-  useEffect(() => {
-    getDataExamActivity();
-    getExam();
-  }, []);
-
-  useUpdateEffect(() => {
-    getExam();
-  }, [examActivity, filterStartDate,filterEndDate]);
-
   const getExam = async () => {
-    const roles = user.roles.map(r=>(r.id))
+    const roles = user.roles.map(r => r.id);
     let params = {
-      user_role:JSON.stringify(roles),
-      user_id:user.id
+      user_role: JSON.stringify(roles),
+      user_id: user.id
     };
 
-    if (roles.includes(1)) {//if student
+    if (roles.includes(1)) {
+      //if student
       params = { ...params, exam_account_num: user.name };
     }
 
@@ -103,13 +82,28 @@ const Dashboard = props => {
 
     if (filterEndDate != null && !isNaN(filterEndDate)) {
       params = { ...params, end_date: format(filterEndDate, "yyyy/MM/dd") };
-    }    
+    }
 
     const response = await doGet("exam", params);
     if (!response.error) {
       setExamData(response.data);
     }
   };
+
+  const getExamCallback = useCallback(getExam, []);
+
+  useInterval(() => {
+    if (ui.active_page.access.includes("E")) getExam();
+  }, 2000);
+
+  useEffect(() => {
+    getDataExamActivity();
+    getExamCallback()
+  }, [getExamCallback]);
+
+  useUpdateEffect(() => {
+    getExam();
+  }, [examActivity, filterStartDate, filterEndDate]);
 
   const changeExamActivity = async act => {
     let params = { id: exam.id, activity: act };
@@ -144,68 +138,72 @@ const Dashboard = props => {
 
   return (
     <Grid container className={classes.root} direction="column">
-      <Grid container alignItems='flex-start'>
-      <Hidden mdUp>
-      <Grid item xs={2} container justify='center' alignItems='center'>
-      <IconButton onClick={()=>{}} size="small">
-                  <MenuIcons fontSize="inherit" />
-      </IconButton>
-      </Grid>
-      </Hidden>  
-      
-      <Hidden smDown>
-        <Grid item xs={2} container alignItems="flex-start" direction="column">
-          <Grid>
-            <Chip label="Exam Schedules" variant="outlined" onClick={getExam} />
+      <Grid container alignItems="flex-start">
+        <Hidden mdUp>
+          <Grid item xs={2} container justify="center" alignItems="center">
+            <IconButton onClick={() => {}} size="small">
+              <MenuIcons fontSize="inherit" />
+            </IconButton>
           </Grid>
-          <Grid>
-            <Select
-              value={examActivity}
-              onChange={examActivityChange}
-              name="exam activity"
-              options={dataExamActivity}
-              placeholder="exam activity"
-              className={classes.select}
-              isClearable={true}
-            />
-          </Grid>
-          <Grid>
-            <MuiPickersUtilsProvider utils={DateFnsUtils}>
-              <DatePicker
-                disableToolbar
-                clearable
-                autoOk
-                format="dd/MM/yyyy"
-                margin="normal"
-                id="filter-start-date"
-                label="filter start date"
-                value={filterStartDate}
-                onChange={filterStartDateChange}
-                KeyboardButtonProps={{
-                  "aria-label": "filter start date"
-                }}
+        </Hidden>
+
+        <Hidden smDown>
+          <Grid
+            item
+            xs={2}
+            container
+            alignItems="flex-start"
+            direction="column"
+          >
+            <Grid>
+              <Chip
+                label="Exam Schedules"
+                variant="outlined"
+                onClick={getExam}
               />
-            </MuiPickersUtilsProvider>
-          </Grid>
-          <Grid>
-            <MuiPickersUtilsProvider utils={DateFnsUtils}>
-              <DatePicker
-                disableToolbar                
-                clearable
-                autoOk
-                format="dd/MM/yyyy"
-                margin="normal"
-                id="filter-end-date"
-                label="filter end date"
-                value={filterEndDate}
-                onChange={filterEndDateChange}
-                KeyboardButtonProps={{
-                  "aria-label": "filter end date"
-                }}
+            </Grid>
+            <Grid>
+              <Select
+                value={examActivity}
+                onChange={examActivityChange}
+                name="exam activity"
+                options={dataExamActivity}
+                placeholder="exam activity"
+                className={classes.select}
+                isClearable={true}
               />
-            </MuiPickersUtilsProvider>
+            </Grid>
+            <Grid>
+              <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                <DatePicker
+                  disableToolbar
+                  clearable
+                  autoOk
+                  format="dd/MM/yyyy"
+                  margin="normal"
+                  id="filter-start-date"
+                  label="filter start date"
+                  value={filterStartDate}
+                  onChange={filterStartDateChange}
+                />
+              </MuiPickersUtilsProvider>
+            </Grid>
+            <Grid>
+              <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                <DatePicker
+                  disableToolbar
+                  clearable
+                  autoOk
+                  format="dd/MM/yyyy"
+                  margin="normal"
+                  id="filter-end-date"
+                  label="filter end date"
+                  value={filterEndDate}
+                  onChange={filterEndDateChange}
+                />
+              </MuiPickersUtilsProvider>
+            </Grid>
           </Grid>
-        </Grid>
         </Hidden>
         <Grid
           item
@@ -223,14 +221,14 @@ const Dashboard = props => {
                   <CardHeader
                     title={exam.exam_type.char_code}
                     action={
-                      <Protected current={ui.active_page.access} only='P'>
-                      <IconButton
-                        aria-label="settings"
-                        className={classes.iconButton}
-                        onClick={menuExamClick(exam)}
-                      >
-                        <MoreVert />
-                      </IconButton>
+                      <Protected current={ui.active_page.access} only="P">
+                        <IconButton
+                          aria-label="settings"
+                          className={classes.iconButton}
+                          onClick={menuExamClick(exam)}
+                        >
+                          <MoreVert />
+                        </IconButton>
                       </Protected>
                     }
                     subheader={exam.exam_type.value}
@@ -298,7 +296,11 @@ const Dashboard = props => {
                             classes.buttonWrapper
                           )}
                         >
-                          <Conditional condition={exam.activity.num_code === 1 && (user.status!==1)}>
+                          <Conditional
+                            condition={
+                              exam.activity.num_code === 1 && user.status !== 1
+                            }
+                          >
                             <Button
                               variant="contained"
                               color="primary"

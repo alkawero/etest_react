@@ -2,7 +2,6 @@
 author alka@2019
 */
 import React, { useState, useEffect } from "react";
-import { connect } from "react-redux";
 import useStyles, { selectCustomSize } from "./scheduleStyle";
 import { useUpdateEffect } from "react-use";
 import { useCommonStyles } from "themes/commonStyle";

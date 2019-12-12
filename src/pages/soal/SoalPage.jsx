@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useCallback } from "react";
 import useStyles, { selectCustomSize } from "./soalStyle";
 import { useUpdateEffect } from "react-use";
 import { useCommonStyles } from "themes/commonStyle";
@@ -98,35 +98,7 @@ const SoalPage = props => {
 
   const classes = useStyles({ dimension });
   const common = useCommonStyles();
-  useEffect(() => {
-    getDataJenjang();
-  }, []);
-
-  useEffect(() => {
-    getSoal();
-    
-  }, [refresh, rowsPerHalaman, halaman]);
-
-  useUpdateEffect(() => {
-    setFilterGrade(null);
-    setDataGrade([]);
-    if (filterJenjang !== null) {
-      getDataGrade();
-    }
-  }, [filterJenjang]);
-
-  useUpdateEffect(() => {
-    setFilterSubject(null);
-    setDataSubject([]);
-    if (filterJenjang !== null && filterGrade !== null) {
-      getDataSubject();
-    }
-  }, [filterGrade]);
-
-  const refreshPage = () => {
-    setRefresh(refresh + 1);
-  };
-
+  
   const getSoal = async () => {
     let params = { pageNum: rowsPerHalaman, user_id:user.id };
     if (filterJenjang !== null) {
@@ -145,6 +117,43 @@ const SoalPage = props => {
       setSoalData(response.data.data);
     }
   };
+
+  const getSoalCallback = useCallback(getSoal, []);
+  
+  useEffect(() => {
+    getDataJenjang();
+    getSoalCallback()
+    
+  }, []);
+
+  
+  useEffect(() => {
+    getSoalCallback()      
+  }, [refresh, rowsPerHalaman, halaman, getSoalCallback]);
+
+  useUpdateEffect(() => {
+    setFilterGrade(null);
+    setDataGrade([]);
+    if (filterJenjang !== null) {
+      getDataGrade();
+    }
+    
+  }, [filterJenjang]);
+
+  useUpdateEffect(() => {
+    setFilterSubject(null);
+    setDataSubject([]);
+    if (filterJenjang !== null && filterGrade !== null) {
+      getDataSubject();
+    }
+  }, [filterGrade]);
+  
+
+  const refreshPage = () => {
+    setRefresh(refresh + 1);
+  };
+
+  
 
   const getById = async id => {
     const response = await doGet("soal/" + id);

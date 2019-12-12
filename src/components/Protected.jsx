@@ -1,6 +1,15 @@
 import React from "react";
 
-const Protected = ({ current, only, children, access }) => {
+const Protected = ({ current, only, children, access,ownerOnly,current_user,owner }) => {
+  
+  if(ownerOnly){
+    if(current_user===owner){
+      return <>{children}</>;
+    }else{
+      return null
+    }
+  }
+  
   if (access) {
     let granted = false;
     current.forEach(cur => {
@@ -14,9 +23,11 @@ const Protected = ({ current, only, children, access }) => {
 
   if (current.includes(only)) {
     return <>{children}</>;
-  } else {
-    return null;
-  }
+  }else{
+    return null
+  } 
+
+  
 };
 
 export default Protected;

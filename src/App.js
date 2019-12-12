@@ -4,7 +4,6 @@ import { ThemeProvider } from '@material-ui/styles';
 import defaultTheme from 'themes/default'
 import { Provider } from "react-redux";
 import store from 'reduxs/store';
-import MainComponentLoader from './components/MainComponentLoader';
 
 const LoginPage =  lazy(() => import("pages/login/LoginPage"))
 const HomePage =  lazy(() => import("pages/home/HomePage"))
