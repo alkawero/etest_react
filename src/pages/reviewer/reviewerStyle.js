@@ -49,7 +49,7 @@ const useStyles = makeStyles(theme => ({
     },
     filterContainer:{
         padding:8,
-        minWidth:300,
+        minWidth:850,
         '&:after':{
             left: '100%',
             top: '25%',
@@ -119,3 +119,5 @@ const useStyles = makeStyles(theme => ({
     
   }));
   export default useStyles
+
+  

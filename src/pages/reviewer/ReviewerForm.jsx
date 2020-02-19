@@ -103,7 +103,7 @@ const ReviewerForm = ({ action, reviewer, create, update, onClose }) => {
         </Grid>
 
         <Conditional condition={user === null}>
-          <SearchListAsync path="user" action={setUser} />
+          <SearchListAsync path="user" action={setUser} placeholder="search user..."/>
         </Conditional>
         <Conditional condition={user !== null}>
           <Grid item xs={8}>

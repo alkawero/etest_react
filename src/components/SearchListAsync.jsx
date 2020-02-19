@@ -11,7 +11,7 @@ import { doGet} from 'apis/api-service';
 import { useDebounce } from 'react-use';
 import Conditional from './Conditional';
 
-const  SearchListAsync = ({path, action}) => {
+const  SearchListAsync = ({path, action,placeholder}) => {
     //data should be [{id:1, text:''}]
     const classes = useStyles()
     const [keyword, setKeyword] = useState('')
@@ -54,12 +54,12 @@ const  SearchListAsync = ({path, action}) => {
     return (
             <Grid container justify='center' className={classes.root}>
                 <TextField
-                    label="search.."
                     value={keyword}
                     onChange={(e)=>{setKeyword(e.target.value)}}
                     margin="dense"
                     variant="outlined"
                     fullWidth
+                    placeholder={placeholder}
                 />
                 <Conditional condition={data.length>0}>
                 <List dense className={classes.listPage}>                

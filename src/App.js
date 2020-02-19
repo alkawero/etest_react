@@ -4,12 +4,14 @@ import { ThemeProvider } from '@material-ui/styles';
 import defaultTheme from 'themes/default'
 import { Provider } from "react-redux";
 import store from 'reduxs/store';
+import AppSkeleton from 'components/AppSkeleton';
 
 const LoginPage =  lazy(() => import("pages/login/LoginPage"))
 const HomePage =  lazy(() => import("pages/home/HomePage"))
 const NotFoundPage =  lazy(() => import("pages/error/NotFoundPage"))
 const ExamPage =  lazy(() => import("pages/exam/ExamPage"))
 
+const falbackComponent = <AppSkeleton/>
 
 const App = () => {
   
@@ -17,7 +19,7 @@ const App = () => {
     <ThemeProvider theme={defaultTheme}>
     <Provider store={store}>      
       <Router>  
-        <Suspense fallback={<span>Loading the page...</span>}>               
+        <Suspense fallback={falbackComponent}>               
           <Switch>      
             <Route exact path="/" component={HomePage} />
             <Route path="/home" component={HomePage} />

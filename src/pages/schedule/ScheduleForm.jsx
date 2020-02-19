@@ -538,7 +538,7 @@ const ScheduleForm = ({ create, update, onClose, exam, action, open }) => {
               style={{ height: 40, width: 210 }}
             >
               <AddButton
-                text="Add Rancangan Soal"
+                text="Rancangan Soal"
                 action={showAddRancanganSoal}
                 classes={common.marginX}
               />
@@ -564,7 +564,7 @@ const ScheduleForm = ({ create, update, onClose, exam, action, open }) => {
               style={{ height: 40, width: 160 }}
             >
               <AddButton
-                text="Add Pengawas"
+                text="Pengawas"
                 action={showAddPengawas}
                 classes={common.marginX}
               />
