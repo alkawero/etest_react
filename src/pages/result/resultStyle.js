@@ -21,7 +21,8 @@ const useStyles = makeStyles(theme => ({
         
     },
     filterContainer:{
-        height:72
+        height:72,
+        padding:'0 8px 0 8px'
     },
     paper:{
         height:50
@@ -70,13 +71,14 @@ const useStyles = makeStyles(theme => ({
 export const selectCustomZindex = {
     control: (base, state) => ({
         ...base,
-        minWidth: '150px',
+        minWidth: '200px',
         margin: '0 4px',
 
     }),
     container: (base, state) => {
         return ({
             ...base,
+            width:'100%',
             zIndex: state.isFocused ? "1100" : "1"  //Only when current state focused
         })
     }

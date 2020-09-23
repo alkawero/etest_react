@@ -1,7 +1,7 @@
 /*
 author alka@2019
 */
-import React,{lazy,Suspense,useState} from 'react';
+import React,{lazy,useState} from 'react';
 import { Route,Redirect,Switch } from "react-router-dom";
 import { useDispatch,useSelector } from "react-redux";
 import {hideSnackbar,setActivePage,logout} from 'reduxs/actions'
@@ -179,6 +179,7 @@ const HomePage = (props) => {
                 
             )
     }else{
+        //console.log("you are here")
         return <Redirect to={{ pathname: "/login" }} />
     }
     
@@ -191,7 +192,7 @@ const useStyles = makeStyles(theme => ({
       height:'100vh' ,
     },
     topBar: {
-      background: 'linear-gradient(to right, #1269dc, #1269dc, #1269dc, #1269dc, #1269dc)',
+      background: '#16cd90',
       boxShadow: '0 6px 5px -3px rgba(0,0,0,.3)',
       zIndex:1100,
     },
@@ -232,7 +233,7 @@ const useStyles = makeStyles(theme => ({
     app_name_wrapper:{
         height: 86,
         borderBottom: '1px solid #ebecef',
-        background:'linear-gradient(to top, #1f0afd, #330bf9, #410df5, #4b10f2, #5412ee);'
+        background:theme.palette.primary.main
     },
     app_name:{
         minHeight: 30,

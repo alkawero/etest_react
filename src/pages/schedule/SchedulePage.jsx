@@ -188,6 +188,7 @@ const SchedulePage = props => {
   };
   useEffect(() => {
     getExam();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refresh, rowsPerHalaman, halaman]);
 
   const getById = async id => {

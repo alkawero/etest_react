@@ -29,7 +29,6 @@ const ResultSiswaPage = props => {
     <Grid container alignContent="flex-start">
       <Grid
         container
-        justify="center"
         alignItems="center"
         className={classes.filterContainer}
         spacing={2}
@@ -37,7 +36,7 @@ const ResultSiswaPage = props => {
         <Grid item>
           <TextField
             id="nis"
-            label="Nomor Induk Siswa..."
+            label="Nomor Induk Peserta..."
             variant="outlined"
             margin="dense"
             value={nis}
@@ -57,6 +56,7 @@ const ResultSiswaPage = props => {
               <TableCell className={common.borderTopLeftRadius}>
                 Jumlah Soal
               </TableCell>
+              <TableCell>Dijawab</TableCell>
               <TableCell>Benar</TableCell>
               <TableCell className={common.borderTopRightRadius}>
                 Salah
@@ -66,6 +66,7 @@ const ResultSiswaPage = props => {
           <TableBody>
               <TableRow className={classes.tableRow}>
                 <TableCell>{props.data&&props.data.soal_count}</TableCell>
+                <TableCell>{props.data&&props.data.answered_count}</TableCell>
                 <TableCell>{props.data&&props.data.right_answer_count}</TableCell>
                 <TableCell>{props.data&&props.data.wrong_answer_count}</TableCell>
               </TableRow>            
@@ -75,6 +76,7 @@ const ResultSiswaPage = props => {
               <TableCell className={common.borderBottomLeftRadius}>
                 Jumlah Soal
               </TableCell>
+              <TableCell>Dijawab</TableCell>
               <TableCell>Benar</TableCell>
               <TableCell className={common.borderBottomRightRadius}>
                 Salah

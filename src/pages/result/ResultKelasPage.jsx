@@ -30,7 +30,6 @@ const ResultKelasPage = props => {
     <Grid container alignContent="flex-start">
       <Grid
         container
-        justify="center"
         alignItems="center"
         className={classes.filterContainer}
         spacing={2}
@@ -60,8 +59,10 @@ const ResultKelasPage = props => {
                 Nomer Induk
               </TableCell>
               <TableCell>Nama</TableCell>
+              <TableCell>Dijawab</TableCell>
+              <TableCell>Benar</TableCell>
               <TableCell className={common.borderTopRightRadius}>
-                Jawaban Benar
+                Salah
               </TableCell>
             </TableRow>
           </TableHead>
@@ -73,9 +74,9 @@ const ResultKelasPage = props => {
               <TableCell>
                 {row.nama}
               </TableCell>
-              <TableCell>
-                {row.right_answer_count}
-              </TableCell>
+              <TableCell>{row.answered_count}</TableCell>
+              <TableCell>{row.right_answer_count}</TableCell>
+              <TableCell>{row.wrong_answer_count}</TableCell>
             </TableRow>
               ))
             }
@@ -87,8 +88,10 @@ const ResultKelasPage = props => {
                 Nomor Induk
               </TableCell>
               <TableCell>Nama</TableCell>
+              <TableCell>Dijawab</TableCell>
+              <TableCell>Benar</TableCell>
               <TableCell className={common.borderBottomRightRadius}>
-                Jawaban Benar
+                Salah
               </TableCell>
             </TableRow>
           </TableHead>

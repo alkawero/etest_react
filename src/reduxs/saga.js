@@ -6,35 +6,35 @@ import {call, put, takeEvery,takeLatest,all} from 'redux-saga/effects'
 import {doGet,doPost,doSilentPost} from 'apis/api-service'
 import {doGetDummy} from 'tests/api-dummy'
 
-let api = process.env.REACT_APP_BACKEND_MODE ==='DEV' ?  process.env.REACT_APP_DEV_API : process.env.REACT_APP_LOCAL_API
+let api = process.env.REACT_APP_BACKEND_MODE ==='PROD' ?  process.env.REACT_APP_API_PROD : process.env.REACT_APP_API_LOCAL
 
 export const api_url = api+'/api/'
 
 export function* rootSaga(){
 yield all([
     takeEvery('login',login),
-    takeEvery('getExamsData',getExamsData),  
-    takeEvery('finishExam',finishExam),      
+    takeEvery('getExamsData',getExamsData),
+    takeEvery('finishExam',finishExam),
     ])
 }
 
-export function* login(action){    
+export function* login(action){
     try {
         let response = null
         if(action.payload.role && action.payload.role==='student'){
-            response  = yield doGet('user/student/',action.payload)                        
+            response  = yield doGet('user/student',action.payload)
         }else{
             //const user = yield doGet('user/'+action.payload.username)
-            response = yield doSilentPost('loginx',action.payload)            
+            response = yield doSilentPost('loginx',action.payload)
         }
         if(!response.data.error){
             yield put(setGlobalError(''));
             yield put(setUserLogin(response.data));
-            yield getTahunPelajaran()            
+            yield getTahunPelajaran()
         }else{
             yield put(setGlobalError(response.data.error));
         }
-        
+
     } catch (e) {
         console.log(e)
     }
@@ -50,10 +50,10 @@ export function* getTahunPelajaran(){
     }
 }
 
-export function* getExamsData(action){   
-    try {        
+export function* getExamsData(action){
+    try {
         const response = yield doGet('exam/detail/'+action.payload.id)
-        const soals = response.data.rancangan.soals        
+        const soals = response.data.rancangan.soals
         let soal_nums = Array.from(Array(soals.length),(x,index)=> ++index);
         soal_nums.sort(() => Math.random() - 0.5);
         let i = 0;
@@ -68,11 +68,11 @@ export function* getExamsData(action){
     }
 }
 
-export function* finishExam(action){   
-    try {        
-        const params = action.payload        
+export function* finishExam(action){
+    try {
+        const params = action.payload
         const response = yield doSilentPost('exam/finish',params)
-        
+
         yield put(setExamDone())
     } catch (e) {
         console.log(e)
@@ -94,4 +94,3 @@ export function* getRoleAccessMap(action){
         console.log(e)
     }
 }
-

@@ -150,6 +150,7 @@ const RancanganPage = props => {
 
   useEffect(() => {
     getRancangan();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refresh, rowsPerHalaman, halaman]);
 
   useUpdateEffect(() => {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect,useCallback } from "react";
 import { infoSnackbar } from "reduxs/actions";
 import clsx from "clsx";
-import useStyles from "./resultStyle";
+import useStyles,{selectCustomZindex} from "./resultStyle";
 import {
   useCommonStyles,
   selectCustomSize,
@@ -32,6 +32,7 @@ import ResultSiswaPage from "./ResultSiswaPage";
 import ResultKelasPage from "./ResultKelasPage";
 import ResultSekolahPage from "./ResultSekolahPage";
 import { useSelector, useDispatch } from "react-redux";
+import Conditional from "components/Conditional";
 
 const ResultMainPage = props => {
   const classes = useStyles();
@@ -42,6 +43,24 @@ const ResultMainPage = props => {
   let history = useHistory();
   const [activePath, setActivePath] = React.useState("/home/result/siswa");
   const [filterAnchor, setFilterAnchor] = useState(null);
+  
+  const [dataParticipantRole, setdataParticipantRole] = useState([]);
+
+  const getdataParticipantRole = async () => {    
+      const params = {  };
+      const response = await doGet("role/options", params);
+      const options = response.data.map(item => ({
+        label: item.name,
+        value: item.id,
+        code: item.code
+      }));      
+      setdataParticipantRole(options);    
+  };
+  const [participantRole, setparticipantRole] = useState(null);
+  const participantRoleChange = e => {
+    setparticipantRole(e);      
+  };
+  
   const [dataJenjang, setDataJenjang] = useState([]);
   const [filterJenjang, setFilterJenjang] = useState(null);
   const filterJenjangChange = e => {    
@@ -142,6 +161,7 @@ const ResultMainPage = props => {
   };
 
   useEffect(() => {
+    getdataParticipantRole()
     getDataFilterExamType();
     getDataJenjang();
   }, []);
@@ -252,78 +272,32 @@ const ResultMainPage = props => {
 
   return (
     <>
-      <Grid
-        wrap="nowrap"
-        container
-        justify="space-between"
-        className={classes.header}
-      >
-        <Grid item>
-          <Tabs
-            value={activePath}
-            onChange={tabChange}
-            aria-label="simple tabs example"
-            centered
-          >
-            <Tab label="Siswa" value={`${url}/siswa`} />
-            <Tab label="Kelas" value={`${url}/kelas`} />
-            <Tab label="Sekolah" value={`${url}/sekolah`} />
-          </Tabs>
-        </Grid>
-        <Grid item>
-          <IconButton
-            onClick={filterClick}
-            className={common.headerIconButton}
-            size="medium"
-          >
-            <Search fontSize="inherit" />
-          </IconButton>
-        </Grid>
-      </Grid>
-      <Grid container justify="center" className={classes.content_wrapper}>
-        <Grid container className={classes.content}>
-          <Grid item xs={12} container className={clsx(common.borderTopRadius)}>
-            <Switch>
-              <Route exact path="/home/result">
-                <ResultSiswaPage onGo={getDataByNis} data={dataByNis} />
-              </Route>
-              <Route path="/home/result/siswa">
-                <ResultSiswaPage onGo={getDataByNis} data={dataByNis} />
-              </Route>
-              <Route path="/home/result/kelas">
-                <ResultKelasPage
-                  onGo={getDataByClass}
-                  data={dataByClass}
-                  filterOptions={datafilterClass}
-                />
-              </Route>
-              <Route path="/home/result/sekolah">
-                <ResultSekolahPage onGo={getDataByNis} data={dataByNis} />
-              </Route>
-            </Switch>
-          </Grid>
-        </Grid>
-      </Grid>
-
-      <PopUp anchor={filterAnchor} position="left">
-        <Grid container className={common.fullFilterContainer}>
-          <Grid item xs={1} container justify="center" alignItems="center">
-            <RefreshButton action={clear} />
-          </Grid>
+      <Conditional condition={filterAnchor!==null}>
+               
           <Grid
             item
-            xs={11}
             spacing={1}
             container
             className={classes.filterActions}
+            style={{padding:8}}
           >
+            <Grid item>
+            <Select
+              value={participantRole}
+              onChange={participantRoleChange}
+              name="participant Type"
+              options={dataParticipantRole}
+              placeholder="participant..."
+              styles={selectCustomZindex}
+            />
+            </Grid>
             <Grid item>
               <Select
                 value={filterJenjang}
                 onChange={filterJenjangChange}
                 name="jenjang"
                 options={dataJenjang}
-                styles={selectCustomSize}
+                styles={selectCustomZindex}
                 isClearable={true}
                 placeholder={"select jenjang..."}
               />
@@ -334,7 +308,7 @@ const ResultMainPage = props => {
                 onChange={filterGradeChange}
                 name="grade"
                 options={dataGrade}
-                styles={selectCustomSize}
+                styles={selectCustomZindex}
                 isClearable={true}
                 placeholder={"select grade..."}
               />
@@ -348,7 +322,7 @@ const ResultMainPage = props => {
                 options={dataSubject}
                 isClearable={true}
                 placeholder="select subject..."
-                styles={selectCustomSize}
+                styles={selectCustomZindex}
               />
             </Grid>
 
@@ -359,7 +333,7 @@ const ResultMainPage = props => {
                 name="exam type"
                 options={dataFilterExamType}
                 placeholder="exam type..."
-                styles={selectCustomSize}
+                styles={selectCustomZindex}                
               />
             </Grid>
 
@@ -400,19 +374,75 @@ const ResultMainPage = props => {
               </MuiPickersUtilsProvider>
             </Grid>
 
-            <Grid item xs={5} className={classes.selectContainer}>
+            <Grid item xs={4} className={classes.selectContainer}>
               <Select
                 value={filterExam}
                 onChange={filterExamChange}
                 name="exams"
                 options={dataFilterExam}
                 placeholder="axams..."
-                styles={selectFullSize}
+                styles={selectCustomZindex}
               />
             </Grid>
+            <Grid item xs={1} container justify="center" alignItems="center">
+              <RefreshButton action={clear} />
+            </Grid>
+          
+        </Grid>  
+        </Conditional>
+      <Grid
+        wrap="nowrap"
+        container
+        justify="space-between"
+        className={classes.header}
+      >        
+        <Grid item>
+          <Tabs
+            value={activePath}
+            onChange={tabChange}
+            aria-label="simple tabs example"
+            centered
+          >
+            <Tab label="Siswa" value={`${url}/siswa`} />
+            <Tab label="Kelas" value={`${url}/kelas`} />            
+          </Tabs>
+        </Grid>
+        <Grid item>
+          <IconButton
+            onClick={filterClick}
+            className={common.headerIconButton}
+            size="medium"
+          >
+            <Search fontSize="inherit" />
+          </IconButton>
+        </Grid>
+      </Grid>
+      <Grid container justify="center" className={classes.content_wrapper}>
+        <Grid container className={classes.content}>
+          <Grid item xs={12} container className={clsx(common.borderTopRadius)}>
+            <Switch>
+              <Route exact path="/home/result">
+                <ResultSiswaPage onGo={getDataByNis} data={dataByNis} />
+              </Route>
+              <Route path="/home/result/siswa">
+                <ResultSiswaPage onGo={getDataByNis} data={dataByNis} />
+              </Route>
+              <Route path="/home/result/kelas">
+                <ResultKelasPage
+                  onGo={getDataByClass}
+                  data={dataByClass}
+                  filterOptions={datafilterClass}
+                />
+              </Route>
+              <Route path="/home/result/sekolah">
+                <ResultSekolahPage onGo={getDataByNis} data={dataByNis} />
+              </Route>
+            </Switch>
           </Grid>
         </Grid>
-      </PopUp>
+      </Grid>
+
+   
     </>
   );
 };

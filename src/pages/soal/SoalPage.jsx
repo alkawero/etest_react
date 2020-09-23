@@ -1,4 +1,4 @@
-import React, { useState, useEffect,useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import useStyles, { selectCustomSize } from "./soalStyle";
 import { useUpdateEffect } from "react-use";
 import { useCommonStyles } from "themes/commonStyle";
@@ -118,18 +118,19 @@ const SoalPage = props => {
     }
   };
 
-  const getSoalCallback = useCallback(getSoal, []);
+  //const getSoalCallback = useCallback(getSoal, []);
   
   useEffect(() => {
     getDataJenjang();
-    getSoalCallback()
-    
+    getSoal()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   
   useEffect(() => {
-    getSoalCallback()      
-  }, [refresh, rowsPerHalaman, halaman, getSoalCallback]);
+    getSoal()    
+    // eslint-disable-next-line react-hooks/exhaustive-deps  
+  }, [refresh, rowsPerHalaman, halaman]);
 
   useUpdateEffect(() => {
     setFilterGrade(null);

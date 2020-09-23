@@ -124,6 +124,7 @@ const ReviewerPage = props => {
   useEffect(() => {
     getDataJenjang();
     getReviewer();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refresh, rowsPerHalaman, halaman]);
 
   useUpdateEffect(() => {

@@ -61,10 +61,12 @@ const ParamPage = (props) => {
     
     useEffect(() => {
         getGroups()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     },[]);
 
     useEffect(() => {
         getData(filterParams)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     },[refresh,rowsPerHalaman,halaman]);
     
 

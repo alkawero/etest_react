@@ -5,8 +5,10 @@ import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
 import ArrowDownward from '@material-ui/icons/ArrowDownward';
 import Typography from '@material-ui/core/Typography';
+import Button from "@material-ui/core/Button";
 
 const BottomDrawer = (props) => {
+    const {action, command} = props
     const classes = useStyles()
     return (
         <Drawer
@@ -24,7 +26,13 @@ const BottomDrawer = (props) => {
                     <Grid item xs={6}>
                         <Typography variant='h6'>{props.tittle}</Typography>
                     </Grid>
+                    
                     <Grid item xs={6} container>
+                    { action &&
+                        <Button variant="contained" color="secondary" onClick={action}>
+                            {command}
+                        </Button>
+                    }
                         <IconButton onClick={props.close} className={classes.arrowButton} size="medium">
                             <ArrowDownward fontSize="inherit" />
                         </IconButton>

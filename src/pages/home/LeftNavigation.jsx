@@ -75,7 +75,7 @@ const LeftNavigation = props => {
       aria-labelledby="nested-list-subheader"
       className={classes.root}
     >
-      {pages.map(page => (
+      {pages.filter(p=>(p.path!=="/exam")).map(page => (
         <ListItem
           key={page.navigation}
           button

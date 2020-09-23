@@ -15,7 +15,7 @@ const useStyles = makeStyles(theme => ({
     },
     header:{
         flex:'0 1 auto',
-        padding:'0 8px'
+        padding:'0 4px'
     },
     content:{
         flex:'2 1 auto',
@@ -49,7 +49,7 @@ const useStyles = makeStyles(theme => ({
     },
     answerWrapper:{
         borderRadius:4,
-        background:'#494cb5',
+        background:'#7474ee',
         padding:8,
         maxHeight:370,
         overflowY:'auto'
@@ -87,8 +87,11 @@ const useStyles = makeStyles(theme => ({
         boxShadow: '0 0 10px 9px #9ecaed'
     },
     soalOptionWrapper:{
+        borderTop:'1px #c4c4c4 solid ',
         height:'35vh',
         overflow:'auto',
+        marginTop:8,
+        paddingTop:8
     },
     soalOption:{
         borderRadius:4,

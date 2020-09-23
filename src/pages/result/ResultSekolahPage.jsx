@@ -37,7 +37,7 @@ const ResultSekolahPage = props => {
         <Grid item>
           <TextField
             id="nis"
-            label="Nomor Induk Siswa..."
+            label="Nomor Induk Peserta..."
             variant="outlined"
             margin="dense"
             value={nis}

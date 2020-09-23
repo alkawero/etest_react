@@ -19,6 +19,7 @@ const ReviewerForm = ({ action, reviewer, create, update, onClose }) => {
   const [jenjang, setJenjang] = useState(null);
   useEffect(() => {
     getDataSubject()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jenjang]);
 
   const jenjangChange = e => {

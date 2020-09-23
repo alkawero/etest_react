@@ -5,17 +5,13 @@ const useStyles = makeStyles(theme => ({
         padding:24
     },
     cardWrapper:{
-        height:340, 
-        borderRadius:4,
-        overflowX:'auto',
-        overflowY:'hidden'    
+        borderRadius:4,        
     },
     cardWrapperTittle:{
         minWidth:200
     },
     card:{
-        width:250,
-        margin:'0 8px 0 8px'
+        width:250,        
     },
     iconButton:{
         color:'white',

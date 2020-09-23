@@ -29,6 +29,7 @@ import { doGet } from "apis/api-service";
 import ReactAudioPlayer from "react-audio-player";
 import { orderBy } from "lodash";
 import { Tooltip } from "@material-ui/core";
+import {EchoInstance} from 'App.js'
 
 const ExamPage = props => {
   const c = useStyles();
@@ -45,10 +46,22 @@ const ExamPage = props => {
   const [tmpAnswer, setTmpAnswer] = useState("");
 
   const [answers, setAnswers] = useState([]);
-  const [showAnswers, setShowAnswers] = useState(false);
+  const [showAnswers, setShowAnswers] = useState(true);
   const [examStatus, setExamStatus] = useState(1);
 
   const minutes = 60;
+
+  useEffect(() => {    
+    EchoInstance.channel('exam')
+    .listen('ExamActivity', (e) => {      
+      if(e!==1){
+        if(exam.exam_data){
+          ForcedFinish()
+        }
+      }      
+    });
+        
+  },[exam]);
 
   const [finishTime, setFinishTime] = useState(addMinutes(new Date(), minutes));
   const finish = timeout => {
@@ -91,7 +104,7 @@ const ExamPage = props => {
     },
     timer === true ? 1000 : null
   );
-
+/*
   const getExamStatus = async id => {
     const params = { id: id };
     const status = await doGet("exam/activity/status", params);
@@ -106,9 +119,10 @@ const ExamPage = props => {
         ForcedFinish();
       }
     }
+    console.log("useInterval");
   }, 5000);
-
-  const ForcedFinish = () => {
+*/
+  const ForcedFinish = () => {    
     const params ={
       exam_id:exam.exam_data.id,
       exam_account_num:user.name
@@ -252,10 +266,13 @@ const ExamPage = props => {
     }
   };
 
+
+  
+
   const answerListComponent = () => {
     if (!showAnswers) {
       return (
-        <Grid item xs={10} container alignContent="flex-start">
+        <Grid item container alignContent="flex-start">
           <Button
             onClick={() => setShowAnswers(!showAnswers)}
             variant="contained"
@@ -271,7 +288,6 @@ const ExamPage = props => {
         <Grid container justify="flex-end" spacing={2} className={common.padding}>
         <Grid
           item
-          xs={10}
           container
           alignContent="flex-start"
           className={c.answerWrapper}
@@ -305,7 +321,7 @@ const ExamPage = props => {
             ))}
             
         </Grid>
-        <Grid item xs={10} container justify="center">
+        <Grid item container alignItems="flex-start" alignContent="flex-start" justify="center">
           <Tooltip title="Hide Answer" >
           <IconButton
             onClick={() => setShowAnswers(!showAnswers)}
@@ -337,7 +353,7 @@ const ExamPage = props => {
           </Grid>
         </Grid>
 
-        <Grid item xs={3} justify="center" spacing={1} container wrap="nowrap">
+        <Grid item style={{width:370}} justify="center" spacing={1} container wrap="nowrap">
           <Grid
             container
             justify="center"
@@ -414,40 +430,46 @@ const ExamPage = props => {
                     )}
                     onClick={() => answering(option)}
                   >
-                    <Grid
-                      item
-                      container
-                      justify="center"
-                      alignItems="center"
-                      className={clsx(
-                        c.optionCode,
-                        option.code ===
-                          answers.filter(
-                            ans => ans.soal_num === currentSoal.soal_num
-                          )[0].code && c.choosenOptionCode
-                      )}
-                      onClick={() => answering(option)}
-                    >
-                      {option.code}
+                    <Grid container justify="center" alignItems="center" item xs={1}>
+                      <Grid
+                        item
+                        container
+                        justify="center"
+                        alignItems="center"
+                        className={clsx(
+                          c.optionCode,
+                          option.code ===
+                            answers.filter(
+                              ans => ans.soal_num === currentSoal.soal_num
+                            )[0].code && c.choosenOptionCode
+                        )}
+                        onClick={() => answering(option)}
+                      >
+                        {option.code}
+                      </Grid>
                     </Grid>
-                    <Grid item>
-                      <Conditional condition={option.content_type === 1}>
-                        {option.content}
-                      </Conditional>
-                      <Conditional condition={option.content_type === 2}>                        
-                        <div dangerouslySetInnerHTML={{__html: option.content}}></div>
-                      </Conditional>
-                      <Conditional condition={option.content_type === 3}>
-                        <MathDisplay value={option.content} />
-                      </Conditional>
-                      <Conditional condition={option.content_type === 4}>
-                        <img
-                          alt={option.code}
-                          className={c.imageOption}
-                          src={option.content}
-                        />
-                      </Conditional>
+                    <Grid item xs={11}>
+                      <Grid item>
+                        <Conditional condition={option.content_type === 1}>
+                          {option.content}
+                        </Conditional>
+                        <Conditional condition={option.content_type === 2}>                        
+                          <div dangerouslySetInnerHTML={{__html: option.content}}></div>
+                        </Conditional>
+                        <Conditional condition={option.content_type === 3}>
+                          <MathDisplay value={option.content} />
+                        </Conditional>
+                        <Conditional condition={option.content_type === 4}>
+                          <img
+                            alt={option.code}
+                            className={c.imageOption}
+                            src={option.content}
+                          />
+                        </Conditional>
+                      </Grid>
                     </Grid>
+                    
+                    
                   </Grid>
                 ))}
             </Conditional>
@@ -480,7 +502,7 @@ const ExamPage = props => {
           </Grid>
         </Grid>
 
-        <Grid item xs={3} container alignItems="flex-end" direction="column">
+        <Grid item container style={{width:290}} >
           {answerListComponent()}
         </Grid>
       </Grid>

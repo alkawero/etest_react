@@ -19,9 +19,7 @@ import Chip from "@material-ui/core/Chip";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import Select from "react-select";
-import format from "date-fns/format";
-import parse from "date-fns/parse";
-import isToday from "date-fns/isToday";
+import {format,parse,endOfMonth,startOfMonth,isToday} from "date-fns";
 import Conditional from "components/Conditional";
 import Protected from "components/Protected";
 import formatDistance from "date-fns/formatDistance";
@@ -29,6 +27,7 @@ import Hidden from "@material-ui/core/Hidden";
 import { MuiPickersUtilsProvider, DatePicker } from "@material-ui/pickers";
 import DateFnsUtils from "@date-io/date-fns";
 import { useDispatch, useSelector } from "react-redux";
+import {EchoInstance} from 'App.js'
 
 const Dashboard = props => {
   const classes = useStyles();
@@ -40,8 +39,8 @@ const Dashboard = props => {
   const [examData, setExamData] = useState([]);
   const [exam, setExam] = useState(null);
 
-  const [filterStartDate, setFilterStartDate] = useState(null);
-  const [filterEndDate, setFilterEndDate] = useState(null);
+  const [filterStartDate, setFilterStartDate] = useState(startOfMonth(new Date()));
+  const [filterEndDate, setFilterEndDate] = useState(endOfMonth(new Date()));
   const filterStartDateChange = e => {
     setFilterStartDate(e);
   };
@@ -93,7 +92,7 @@ const Dashboard = props => {
   const getExamCallback = useCallback(getExam, []);
 
   useInterval(() => {
-    if (ui.active_page.access.includes("E")) getExam();
+    //if (ui.active_page.access.includes("E")) getExam();
   }, 2000);
 
   useEffect(() => {
@@ -136,6 +135,17 @@ const Dashboard = props => {
     }
   };
 
+  
+
+  useEffect(() => {
+    
+    EchoInstance.channel('exam')
+    .listen('ExamActivity', (e) => {            
+      getExam()
+    });
+        
+  },[filterStartDate,filterEndDate]);
+
   return (
     <Grid container className={classes.root} direction="column">
       <Grid container alignItems="flex-start">
@@ -145,24 +155,17 @@ const Dashboard = props => {
               <MenuIcons fontSize="inherit" />
             </IconButton>
           </Grid>
-        </Hidden>
+        </Hidden>        
 
-        <Hidden smDown>
-          <Grid
-            item
-            xs={2}
-            container
-            alignItems="flex-start"
-            direction="column"
-          >
-            <Grid>
+        <Grid container spacing={1} alignItems="center" style={{marginBottom:8}}>
+          <Grid item container alignContent="center" style={{width:150, paddingTop:8}}>
               <Chip
-                label="Exam Schedules"
+                label="Refresh Schedules"
                 variant="outlined"
                 onClick={getExam}
               />
             </Grid>
-            <Grid>
+            <Grid item>
               <Select
                 value={examActivity}
                 onChange={examActivityChange}
@@ -173,14 +176,15 @@ const Dashboard = props => {
                 isClearable={true}
               />
             </Grid>
-            <Grid>
+            <Grid item>
               <MuiPickersUtilsProvider utils={DateFnsUtils}>
                 <DatePicker
                   disableToolbar
                   clearable
                   autoOk
+                  variant="inline"
                   format="dd/MM/yyyy"
-                  margin="normal"
+                  margin="dense"
                   id="filter-start-date"
                   label="filter start date"
                   value={filterStartDate}
@@ -188,14 +192,15 @@ const Dashboard = props => {
                 />
               </MuiPickersUtilsProvider>
             </Grid>
-            <Grid>
+            <Grid item>
               <MuiPickersUtilsProvider utils={DateFnsUtils}>
                 <DatePicker
                   disableToolbar
                   clearable
                   autoOk
+                  variant="inline"
                   format="dd/MM/yyyy"
-                  margin="normal"
+                  margin="dense"
                   id="filter-end-date"
                   label="filter end date"
                   value={filterEndDate}
@@ -203,14 +208,11 @@ const Dashboard = props => {
                 />
               </MuiPickersUtilsProvider>
             </Grid>
-          </Grid>
-        </Hidden>
+        </Grid>
         <Grid
           item
-          xs={10}
           container
-          spacing={2}
-          wrap="nowrap"
+          spacing={2}          
           className={classes.cardWrapper}
         >
           {examData.map(exam => {
@@ -221,7 +223,7 @@ const Dashboard = props => {
                   <CardHeader
                     title={exam.exam_type.char_code}
                     action={
-                      <Protected current={ui.active_page.access} only="P">
+                      <Conditional condition={exam.pengawas.emp_id===user.id}>                      
                         <IconButton
                           aria-label="settings"
                           className={classes.iconButton}
@@ -229,7 +231,7 @@ const Dashboard = props => {
                         >
                           <MoreVert />
                         </IconButton>
-                      </Protected>
+                      </Conditional>
                     }
                     subheader={exam.exam_type.value}
                     style={{ color: "white", backgroundColor: "#15cd8f" }}
@@ -298,7 +300,9 @@ const Dashboard = props => {
                         >
                           <Conditional
                             condition={
-                              exam.activity.num_code === 1 && user.status !== 1
+                              exam.activity.num_code === 1 
+                              && user.status !== 1
+                              && user.roles.map(r=>(r.id)).includes(exam.participant_role)
                             }
                           >
                             <Button

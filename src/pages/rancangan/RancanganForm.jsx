@@ -105,7 +105,9 @@ const RancanganForm = ({
   const [selectedSoal, setSelectedSoal] = useState([]);
   const [soalData, setSoalData] = useState([]);
   const getSoal = async () => {
-    let params = {};
+    let params = {
+      user_id:user.id
+    };
     if (jenjang !== null) {
       params = { ...params, jenjang: jenjang.value };
     }
@@ -122,14 +124,17 @@ const RancanganForm = ({
       }
     }
 
-    const response = await doGet("soal", params);
-    if (!response.error) {
-      const selectedIds = selectedSoal.map(soal => soal.id);
-      const availableData = response.data.filter(
-        data => !selectedIds.includes(data.id)
-      );
-      setSoalData(availableData);
+    if(params.subject && soalData.length===0){
+      const response = await doGet("soal", params);
+      if (!response.error) {
+        const selectedIds = selectedSoal.map(soal => soal.id);
+        const availableData = response.data.filter(
+          data => !selectedIds.includes(data.id)
+        );
+        setSoalData(availableData);
+      }
     }
+    
   };
 
   const [soalQuota, setSoalQuota] = useState(10);
@@ -316,6 +321,7 @@ const RancanganForm = ({
     if ((action === "edit" || action === "create") && isCreator()) {
       setSubject(e);
       setSelectedSoal([]);
+      setSoalData([])
     }
   };
   const getDataSubject = async () => {
@@ -473,8 +479,7 @@ const RancanganForm = ({
     setBottomDrawerTittle("Add Soal To Rancangan");
   };
 
-  const closeAddSoal = () => {
-    setSoalData([]);
+  const closeAddSoal = () => {    
     setOpenBottomDrawer(false);
   };
 
@@ -497,6 +502,15 @@ const RancanganForm = ({
     setOpenTopDrawer(false);
   };
 
+  const addAllSoal = () => {
+    let no=1;
+    setSelectedSoal(      
+      soalData.map(soal=>({...soal,bobot:0, add_by: user.id, no:no++}))
+      );
+    setSoalData([])
+    closeAddSoal()
+  };
+
   const chooseSoal = soal => {
     const mySoal = getSoalByMe();
     let quotaSoal = 0;
@@ -515,6 +529,8 @@ const RancanganForm = ({
       const sorted = sortBy(added, soal => soal.no);
       setSelectedSoal(sorted);
     }
+    
+    setSoalData(soalData.filter(s=>(s.id!==soal.id)))
 
     closeAddSoal();
   };
@@ -626,29 +642,33 @@ const RancanganForm = ({
       errors = { ...errors, esubject: "please choose subject" };
     }
 
-    if (sumBobot() !== 100) {
-      errors = { ...errors, ebobot: "total bobot must be 100" };
-    }
-
-    const soalByMe = getSoalByMe();
-    let quotaSoal = 0;
-    if (isCreator()) {
-      quotaSoal = creatorMc + creatorEs;        
-    } else {
-      quotaSoal = partnerMc + partnerEs;
+    //kalau bukan UKG harus pakai bobot  
+    if ( examType.value!==5){
+      if (sumBobot() !== 100) {
+        errors = { ...errors, ebobot: "total bobot must be 100" };
+      }
+      
+      const soalByMe = getSoalByMe();
+      let quotaSoal = 0;
+      if (isCreator()) {
+        quotaSoal = creatorMc + creatorEs;        
+      } else {
+        quotaSoal = partnerMc + partnerEs;
+      }
+      
+      if (soalByMe.length !== quotaSoal) {
+        errors = {
+          ...errors,
+          equota:
+            "you already add " +
+            soalByMe.length +
+            ", you have to add " +
+            quotaSoal +
+            " soal"
+        };
+      }
     }
     
-    if (soalByMe.length !== quotaSoal) {
-      errors = {
-        ...errors,
-        equota:
-          "you already add " +
-          soalByMe.length +
-          ", you have to add " +
-          quotaSoal +
-          " soal"
-      };
-    }
 
     setErrorState(errors);
 
@@ -1024,9 +1044,9 @@ const RancanganForm = ({
               {selectedSoal.map(row => (
                 <TableRow key={row.id} className={classes.tableRow}>
                   <TableCell>{row.no}</TableCell>
-                  <TableCell>{row.kds.join(",")}</TableCell>
-                  <TableCell>{row.materis.join(",")}</TableCell>
-                  <TableCell>{row.ranahs.join(",")}</TableCell>
+                  <TableCell>{row.kds && row.kds.join(",")}</TableCell>
+                  <TableCell>{row.materis&&row.materis.join(",")}</TableCell>
+                  <TableCell>{row.ranahs&&row.ranahs.join(",")}</TableCell>
                   <TableCell>{row.creator_name}</TableCell>
                   <TableCell>{row.type_name}</TableCell>
                   <TableCell>
@@ -1105,6 +1125,8 @@ const RancanganForm = ({
         tittle={bottomDrawerTittle}
         open={openBottomDrawer}
         close={closeAddSoal}
+        action = {addAllSoal}
+        command="add all"
       >
         <Grid
           item
@@ -1137,9 +1159,9 @@ const RancanganForm = ({
                   <TableCell>{row.subject_name}</TableCell>
                   <TableCell>{row.jenjang}</TableCell>
                   <TableCell>{row.grade_num}</TableCell>
-                  <TableCell>{row.kds.join(",")}</TableCell>
-                  <TableCell>{row.materis.join(",")}</TableCell>
-                  <TableCell>{row.ranahs.join(",")}</TableCell>
+                  <TableCell>{row.kds && row.kds.join(",")}</TableCell>
+                  <TableCell>{row.materis&&row.materis.join(",")}</TableCell>
+                  <TableCell>{row.ranahs&&row.ranahs.join(",")}</TableCell>
                   <TableCell>{row.creator_name}</TableCell>
                   <TableCell>{row.type_name}</TableCell>
                   <TableCell>

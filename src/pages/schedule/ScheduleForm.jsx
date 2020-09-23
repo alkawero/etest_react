@@ -247,6 +247,29 @@ const ScheduleForm = ({ create, update, onClose, exam, action, open }) => {
     }
   };
 
+  
+
+
+  const [dataParticipantRole, setdataParticipantRole] = useState([]);
+
+  const getdataParticipantRole = async () => {    
+      const params = {  };
+      const response = await doGet("role/options", params);
+      const options = response.data.map(item => ({
+        label: item.name,
+        value: item.id,
+        code: item.code
+      }));      
+      setdataParticipantRole(options);    
+  };
+  const [participantRole, setparticipantRole] = useState(null);
+  const participantRoleChange = e => {
+    if (action === "edit" || action === "create") {
+      setparticipantRole(e);      
+    }
+    
+  };
+
   useUpdateEffect(() => {
     if (open === false) clear();
   }, [open]);
@@ -264,6 +287,7 @@ const ScheduleForm = ({ create, update, onClose, exam, action, open }) => {
   };
 
   useEffect(() => {
+    getdataParticipantRole()
     getTahunAjaran();
     getDataSemester();
     getDataExamType();
@@ -315,6 +339,10 @@ const ScheduleForm = ({ create, update, onClose, exam, action, open }) => {
       setRancanganSoal(exam.rancangan);
       setParticipantsClass(exam.class_participants);
       setIsUserGenerated(exam.user_generated)
+      setparticipantRole({
+        label: exam.participant_role_name,
+        value: exam.participant_role
+      })
     }
   }, [exam]);
 
@@ -404,7 +432,7 @@ const ScheduleForm = ({ create, update, onClose, exam, action, open }) => {
   const submit = () => {
     let errors = {};
 
-    if (participantsClass.length < 1) {
+    if (participantsClass.length < 1 && participantRole.value===1) {
       errors = {
         ...errors,
         eparticipants: "please choose the participants of this exam"
@@ -449,7 +477,9 @@ const ScheduleForm = ({ create, update, onClose, exam, action, open }) => {
         duration: duration,
         pengawas: pengawas.id,
         rancangan: rancanganSoal.id,
-        participant_class: participantsClass.map(cls => cls.id)
+        participant_class: participantsClass.map(cls => cls.id),
+        participant_role:participantRole.value,
+        participant_role_code:participantRole.code
       };
 
       if (exam) {
@@ -479,7 +509,16 @@ const ScheduleForm = ({ create, update, onClose, exam, action, open }) => {
     <>
       <Grid container direction="column" className={classes.addContent}>      
         <Grid container className={common.paddingX}>
-          <Grid item className={common.marginBottom}>
+          
+            <RSelect
+              value={participantRole}
+              onChange={participantRoleChange}
+              name="participant Type"
+              options={dataParticipantRole}
+              placeholder="participant..."
+              styles={selectCustomZindex}
+            />
+
             <RSelect
               value={examType}
               onChange={examTypeChange}
@@ -488,7 +527,7 @@ const ScheduleForm = ({ create, update, onClose, exam, action, open }) => {
               placeholder="exam type..."
               styles={selectCustomZindex}
             />
-          </Grid>
+          
 
           <RSelect
             value={semester}
@@ -545,13 +584,16 @@ const ScheduleForm = ({ create, update, onClose, exam, action, open }) => {
             </Grid>
           </Conditional>
 
-          <MultipleSelectCheckBox
-            readOnly={!(action === "edit" || action === "create")}
-            value={participantsClass}
-            options={participantsClassOption}
-            onChange={chooseParticipantsClass}
-            placeholder="class room"
-          />
+          
+          <Conditional condition={participantRole && participantRole.code==='std'}>
+            <MultipleSelectCheckBox
+              readOnly={!(action === "edit" || action === "create")}
+              value={participantsClass}
+              options={participantsClassOption}
+              onChange={chooseParticipantsClass}
+              placeholder="class room"
+            />
+          </Conditional>
 
           <Conditional
             condition={
@@ -612,15 +654,12 @@ const ScheduleForm = ({ create, update, onClose, exam, action, open }) => {
                 }}
               />
             </MuiPickersUtilsProvider>
-            <Grid container alignItems="center" style={{ width: 80 }}>
+            <Grid container alignItems="flex-end" style={{ width: 150, paddingBottom:4 }}>
               <TextField
                 id="duration"
                 value={duration}
-                margin="dense"
-                variant="outlined"
-                label="duration"
-                helperText="minutes"
-                style={{ margin: "-1px 4px 0 4px", width: 65 }}
+                margin="normal"                
+                label="duration (minutes)"                                
               />
             </Grid>
           </Grid>
@@ -724,6 +763,15 @@ const ScheduleForm = ({ create, update, onClose, exam, action, open }) => {
                     gutterBottom
                   >
                     {pengawas !== null && pengawas.id}
+                  </Typography>
+
+                  <Typography
+                    variant="subtitle1"
+                    color="textSecondary"
+                    className={classes.title}
+                    gutterBottom
+                  >
+                    -
                   </Typography>
                 </CardContent>
               </Card>
