@@ -1,6 +1,5 @@
 import React,{useState,useEffect} from 'react';
-import { connect } from "react-redux";
-import {showSnackbar} from 'reduxs/actions';
+import { useSelector } from "react-redux";
 import useStyles from './pageStyle'
 import Grid from '@material-ui/core/Grid';
 import Paper  from '@material-ui/core/Paper';
@@ -36,7 +35,8 @@ import PopUp from 'components/PopUp';
 
 
 const Page = (props) => {
-    
+    const user = useSelector(state => state.user);
+    const ui = useSelector(state => state.ui);
     const [openTopDrawer, setOpenTopDrawer] = useState(false)
     const [openRightDrawer, setOpenRightDrawer] = useState(false)
     const [rightDrawerTittle, setRightDrawerTittle] = useState('')
@@ -57,6 +57,10 @@ const Page = (props) => {
     
     const classes = useStyles({dimension})
     
+    const getHeaders = ()=> {
+        return {"Authorization": user.token}    
+      }
+    
     useEffect(() => {
         getPage()
       },[refresh,rowsPerHalaman,halaman]);
@@ -67,7 +71,8 @@ const Page = (props) => {
     
     const getPage = async()=>{
         const params={pageNum:rowsPerHalaman}
-        const response = await doGet('page?page='+halaman,params)
+        
+        const response = await doGet('page?page='+halaman, params, getHeaders());
         if(!response.error){
             setTotalRows(response.data.total)
             setPageData(response.data.data) 
@@ -76,7 +81,9 @@ const Page = (props) => {
     }
 
     const getPageById = async(pageId)  =>{
-        const response = await doGet('page/'+pageId)
+        const params = {};
+        
+        const response = await doGet('page/'+pageId, params, getHeaders());
         if(!response.error){
             return response.data
         }    
@@ -97,12 +104,14 @@ const Page = (props) => {
     }
 
     const create= async(p)=>{
-        await doPost('page',p,'save page') 
+        
+        await doPost('page',p,'save page', getHeaders()) 
         setRefresh(refresh+1)              
     }
 
     const update= async(p)=>{
-        await doPut('page',p,'save page') 
+        
+        await doPut('page',p,'save page', getHeaders())  
         setRefresh(refresh+1)              
     }
 
@@ -111,7 +120,8 @@ const Page = (props) => {
             ...p,
             status:p.status===0?1:0
         }
-        await doPatch('page/toggle',newObject,'save page') 
+        
+        await doPatch('page/toggle',newObject,'save page', getHeaders())  
         setRefresh(refresh+1)              
     }
     
@@ -134,7 +144,8 @@ const Page = (props) => {
     }
     
     const deleteById=async (p)=>{
-        await doDelete('page',p,'delete page')
+        
+        await doDelete('page',p,'delete page',getHeaders())
         setRefresh(refresh+1)
     }
 
@@ -147,7 +158,7 @@ const Page = (props) => {
         setHalaman(1);
       }
 
-    const currentAccess = props.ui.active_page.access
+    const currentAccess = ui.active_page.access
 
     return(
         <>
@@ -155,7 +166,7 @@ const Page = (props) => {
             <Grid item xs={10} sm={6} className={classes.headerTittle}>
                 <Typography variant="h6">
                     {
-                        props.ui.active_page.tittle
+                        ui.active_page.tittle
                     }
                 </Typography>
             </Grid>            
@@ -259,17 +270,6 @@ const Page = (props) => {
     )
 }
 
-const mapStateToProps = state => {
-    return {
-        user    : state.user,
-        ui      : state.ui
-     };
-  }
-const mapDispatchToProps = dispatch => {
-    return {      
-        showSnackbar: (v,t) => dispatch(showSnackbar(v,t))
-    }
-}
 
 
-export default  connect(mapStateToProps,mapDispatchToProps)(Page);
+export default  Page;

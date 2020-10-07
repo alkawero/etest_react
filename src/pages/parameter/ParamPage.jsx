@@ -1,6 +1,5 @@
 import React,{useState,useEffect} from 'react';
-import { connect } from "react-redux";
-import {showSnackbar} from 'reduxs/actions';
+import { useDispatch, useSelector } from "react-redux";
 import useStyles from './paramStyle'
 import Grid from '@material-ui/core/Grid';
 import Paper  from '@material-ui/core/Paper';
@@ -32,8 +31,9 @@ import FlexibleFilter from 'components/FlexibleFilter';
 
 
 const ParamPage = (props) => {
-    
-    
+        
+    const user = useSelector(state => state.user);
+    const ui = useSelector(state => state.ui);
     const [openRightDrawer, setOpenRightDrawer] = useState(false)
     const [rightDrawerTittle, setRightDrawerTittle] = useState('')
     const [RightDrawerContent, setRightDrawerContent] = useState(null)
@@ -58,6 +58,10 @@ const ParamPage = (props) => {
     const dimension = {md:md,xl:xl}    
     
     const classes = useStyles({dimension})
+
+    const getHeaders = ()=> {
+        return {"Authorization": user.token}    
+    }
     
     useEffect(() => {
         getGroups()
@@ -71,7 +75,9 @@ const ParamPage = (props) => {
     
 
     const getGroups = async()=>{
-        const response = await doGet('param/groups')        
+        const params = {};
+        
+        const response = await doGet("param/groups", params, getHeaders());             
         const paramGroups = response.data.map(group=>({label:group,value:group}))
         setParamGroups(paramGroups)
         const newFilters = filters.map(filter=>{
@@ -91,7 +97,8 @@ const ParamPage = (props) => {
     
     const getData = async(paramsFromFilter)=>{
         const params={pageNum:rowsPerHalaman,...paramsFromFilter}
-        const response = await doGet('param?page='+halaman,params)
+                
+        const response = await doGet('param?page='+halaman,params,getHeaders())
         if(!response.error){
             setTotalRows(response.data.total)
             setData(response.data.data) 
@@ -100,7 +107,9 @@ const ParamPage = (props) => {
     }
 
     const getById = async(id)  =>{
-        const response = await doGet('param/'+id)
+        const params = {};
+        
+        const response = await doGet('param/'+id, params, getHeaders());       
         if(!response.error){
             return response.data
         }    
@@ -118,12 +127,14 @@ const ParamPage = (props) => {
     }
 
     const create= async(o)=>{
-        await doPost('param',o,'save parameter') 
+        
+        await doPost('param',o,'save parameter', getHeaders()); 
         setRefresh(refresh+1)              
     }
 
     const update= async(o)=>{
-        await doPut('param',o,'save parameter') 
+        
+        await doPut('param',o,'save parameter',getHeaders()); 
         setRefresh(refresh+1)              
     }
 
@@ -132,9 +143,9 @@ const ParamPage = (props) => {
             ...o,
             status:o.status===0?1:0
         }
-        await doPatch('param/toggle',newObject,'save parameter') 
-        setRefresh(refresh+1) 
-                
+        
+        await doPatch('param/toggle',newObject,'save parameter',getHeaders()); 
+        setRefresh(refresh+1)                 
     }
     
 
@@ -150,7 +161,8 @@ const ParamPage = (props) => {
     }
     
     const deleteById=async (o)=>{
-        await doDelete('param',o,'delete parameter')
+        
+        await doDelete('param',o,'delete parameter',getHeaders());
         setRefresh(refresh+1)
     }
 
@@ -163,7 +175,9 @@ const ParamPage = (props) => {
         setHalaman(1);
       }
 
-    const currentAccess = props.ui.active_page.access
+    const currentAccess = ui.active_page.access
+
+    
 
     return(
         <>
@@ -171,7 +185,7 @@ const ParamPage = (props) => {
             <Grid item xs={10} sm={6} className={classes.headerTittle}>
                 <Typography variant="h6">
                     {
-                        props.ui.active_page.tittle
+                        ui.active_page.tittle
                     }
                 </Typography>
             </Grid>            
@@ -263,18 +277,4 @@ const ParamPage = (props) => {
 }
 
 
-
-const mapStateToProps = state => {
-    return {
-        user    : state.user,
-        ui      : state.ui
-     };
-  }
-const mapDispatchToProps = dispatch => {
-    return {      
-        showSnackbar: (v,t) => dispatch(showSnackbar(v,t))
-    }
-}
-
-
-export default  connect(mapStateToProps,mapDispatchToProps)(ParamPage);
+export default  ParamPage;

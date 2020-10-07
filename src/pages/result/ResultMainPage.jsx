@@ -46,9 +46,14 @@ const ResultMainPage = props => {
   
   const [dataParticipantRole, setdataParticipantRole] = useState([]);
 
+  const getHeaders = ()=> {
+    return {"Authorization": user.token}    
+  }
+
   const getdataParticipantRole = async () => {    
       const params = {  };
-      const response = await doGet("role/options", params);
+      
+      const response = await doGet("role/options", params, getHeaders());
       const options = response.data.map(item => ({
         label: item.name,
         value: item.id,
@@ -70,7 +75,8 @@ const ResultMainPage = props => {
   };
   const getDataJenjang = async () => {
     const params = { group: "jenjang" };
-    const response = await doGet("param", params);
+    
+    const response = await doGet("param", params, getHeaders());
     setDataJenjang(
       response.data.map(j => ({ label: j.value, value: j.char_code }))
     );
@@ -88,7 +94,8 @@ const ResultMainPage = props => {
   const getDataGrade = async jenjang => {
     if (jenjang !== null) {
       const params = { group: "grade", key: jenjang.value };
-      const response = await doGet("param", params);
+      
+      const response = await doGet("param", params, getHeaders());
       const grades = response.data.map(grade => ({
         label: grade.value,
         value: grade.char_code
@@ -106,7 +113,8 @@ const ResultMainPage = props => {
         grade_num: grade.label,
         grade_char: grade.value
       };
-      const response = await doGet("kelas", params);
+      
+      const response = await doGet("kelas", params, getHeaders());
       setDataFilterClass(
         response.data.map(kelas => ({
           value: kelas.id,
@@ -125,7 +133,8 @@ const ResultMainPage = props => {
   const getDataSubject = async grade => {    
     if (filterJenjang !== null && grade !== null) {
       const params = { jenjang: filterJenjang.value, grade: grade.value };
-      const response = await doGet("mapel", params);
+      
+      const response = await doGet("mapel", params, getHeaders());
       setDataSubject(
         response.data.map(data => ({ label: data.name, value: data.id }))
       );
@@ -145,7 +154,8 @@ const ResultMainPage = props => {
   };
   const getDataFilterExamType = async () => {
     const params = { group: "exam_type" };
-    const response = await doGet("param", params);
+    
+    const response = await doGet("param", params, getHeaders());
     setDataFilterExamType(
       response.data.map(j => ({ label: j.value, value: j.num_code }))
     );
@@ -193,8 +203,8 @@ const ResultMainPage = props => {
     if (filterSubject !== null) {
       params = { ...params, subject: filterSubject.value };
     }
-
-    const response = await doGet("exam", params);
+    
+    const response = await doGet("exam", params, getHeaders());
     if (!response.error) {
       setDataFilterExam(response.data);
     }
@@ -240,8 +250,9 @@ const ResultMainPage = props => {
         exam_id: filterExam.value,
         nis: nis
       };
-
-      const response = await doGet("result/nis", params);
+      
+      
+      const response = await doGet("result/nis", params, getHeaders());
 
       if (response.data) setDataByNis(response.data);
     }
@@ -264,7 +275,8 @@ const ResultMainPage = props => {
         jenjang:filterJenjang.value
       };
 
-      const response = await doGet("result/kelas", params);
+      
+      const response = await doGet("result/kelas", params, getHeaders());
 
       if (response.data) setDataByClass(response.data);
     }
@@ -403,7 +415,7 @@ const ResultMainPage = props => {
             aria-label="simple tabs example"
             centered
           >
-            <Tab label="Siswa" value={`${url}/siswa`} />
+            <Tab label="Peserta" value={`${url}/siswa`} />
             <Tab label="Kelas" value={`${url}/kelas`} />            
           </Tabs>
         </Grid>

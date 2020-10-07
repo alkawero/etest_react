@@ -7,7 +7,8 @@ const [dataJurusan, setDataJurusan] = useState([])
     }
     const getDataJurusan =async()=>{
         const params= {group:'jurusan'}
-        const response = await doGet('param',params)
+        
+        const response = await doGet("param", params, getHeaders());
         setDataJurusan(response.data.map(j=>({label:j.value, value:j.num_code})));
     }
 <Conditional condition={jenjang!==null && jenjang.value==='SMA'}>

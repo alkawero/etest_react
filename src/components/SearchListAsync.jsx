@@ -11,7 +11,7 @@ import { doGet} from 'apis/api-service';
 import { useDebounce } from 'react-use';
 import Conditional from './Conditional';
 
-const  SearchListAsync = ({path, action,placeholder}) => {
+const  SearchListAsync = ({path, action,placeholder, user}) => {
     //data should be [{id:1, text:''}]
     const classes = useStyles()
     const [keyword, setKeyword] = useState('')
@@ -34,12 +34,15 @@ const  SearchListAsync = ({path, action,placeholder}) => {
         }
     },[debouncedKeyword]);
     
-
+    const getHeaders = ()=> {
+        return {"Authorization": user.token}    
+      }
     
 
     const getData = async()=>{
         const params={keyword:debouncedKeyword}
-        const response = await doGet(path,params)
+        
+        const response = await doGet(path, params, getHeaders());        
         if(!response.error){
             setData(response.data.data) 
         }

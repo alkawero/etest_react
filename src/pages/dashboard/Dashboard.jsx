@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useInterval, useUpdateEffect } from "react-use";
-import { getExamsData, setActivePage } from "reduxs/actions";
+import { getExamsData, setActivePage, setGlobalError } from "reduxs/actions";
 import { withRouter } from "react-router";
-import { doGet, doPatch } from "apis/api-service";
+import { doGet, doPatch, doSilentPost } from "apis/api-service";
 import useStyles from "./dashboardStyle";
 import { useCommonStyles } from "themes/commonStyle";
 import clsx from "clsx";
+import Dialog from '@material-ui/core/Dialog';
+import Slide from '@material-ui/core/Slide';
 import Grid from "@material-ui/core/Grid";
 import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
@@ -28,6 +30,7 @@ import { MuiPickersUtilsProvider, DatePicker } from "@material-ui/pickers";
 import DateFnsUtils from "@date-io/date-fns";
 import { useDispatch, useSelector } from "react-redux";
 import {EchoInstance} from 'App.js'
+import ExamMonitoring from './ExamMonitoring'
 
 const Dashboard = props => {
   const classes = useStyles();
@@ -35,8 +38,23 @@ const Dashboard = props => {
   const dispatch = useDispatch();
   const user = useSelector(state => state.user);
   const ui = useSelector(state => state.ui);
+  const [openMonitoring, setopenMonitoring] = useState(false);
+
+  const getHeaders = ()=> {
+    return {"Authorization": user.token}    
+  }
+  
+  const handleopenMonitoring = () => {
+    setopenMonitoring(true);
+    menuExamClose();
+  };
+
+  const handleCloseMonitoring = () => {
+    setopenMonitoring(false);
+  };
 
   const [examData, setExamData] = useState([]);
+  const [finishedExams, setfinishedExams] = useState([]);
   const [exam, setExam] = useState(null);
 
   const [filterStartDate, setFilterStartDate] = useState(startOfMonth(new Date()));
@@ -54,11 +72,28 @@ const Dashboard = props => {
   };
   const getDataExamActivity = async () => {
     const params = { group: "exam_activity" };
-    const response = await doGet("param", params);
+    
+    const response = await doGet("param", params, getHeaders());
     setDataExamActivity(
       response.data.map(j => ({ label: j.value, value: j.num_code }))
     );
   };
+
+  const getFinishedExams = async () => {//
+    let params = {
+      nomor_induk: user.id
+    };
+    
+    const response = await doGet("exam/user/finish", params,getHeaders());
+    if (!response.error) {
+      setfinishedExams(response.data);
+    }
+  }
+
+  const refresh = () => {
+    getExam()
+    
+  }
 
   const getExam = async () => {
     const roles = user.roles.map(r => r.id);
@@ -83,33 +118,40 @@ const Dashboard = props => {
       params = { ...params, end_date: format(filterEndDate, "yyyy/MM/dd") };
     }
 
-    const response = await doGet("exam", params);
+    
+    const response = await doGet("exam", params, getHeaders());
+
     if (!response.error) {
       setExamData(response.data);
     }
+    getFinishedExams()
   };
 
   const getExamCallback = useCallback(getExam, []);
 
-  useInterval(() => {
-    //if (ui.active_page.access.includes("E")) getExam();
-  }, 2000);
+  
+  useEffect(() => {
+    
+  }, []);
 
   useEffect(() => {
     getDataExamActivity();
     getExamCallback()
+    
   }, [getExamCallback]);
 
   useUpdateEffect(() => {
     getExam();
+    ;
   }, [examActivity, filterStartDate, filterEndDate]);
 
   const changeExamActivity = async act => {
     let params = { id: exam.id, activity: act };
 
-    const response = await doPatch("exam/activity", params, "start exam");
-    if (!response.error) {
-      getExam();
+    
+    const response = await doPatch("exam/activity", params, "change exam activity",getHeaders());
+    if (response && !response.error) {
+      //getExam();
       menuExamClose();
     }
   };
@@ -129,6 +171,12 @@ const Dashboard = props => {
   const takeExam = exam => {
     const nextPage = user.pages.filter(p => p.path === "/exam")[0];
     if (nextPage) {
+      const params = {
+        nomor_induk:user.id,
+        exam_id:exam.id
+      }
+
+      doSilentPost("exam/take", params);
       dispatch(setActivePage(nextPage));
       dispatch(getExamsData(exam));
       props.history.push("/exam");
@@ -142,11 +190,16 @@ const Dashboard = props => {
     EchoInstance.channel('exam')
     .listen('ExamActivity', (e) => {            
       getExam()
+      
     });
+    return function cleanup() {
+      EchoInstance.leaveChannel('exam');
+    }
         
   },[filterStartDate,filterEndDate]);
 
   return (
+    <>
     <Grid container className={classes.root} direction="column">
       <Grid container alignItems="flex-start">
         <Hidden mdUp>
@@ -162,7 +215,7 @@ const Dashboard = props => {
               <Chip
                 label="Refresh Schedules"
                 variant="outlined"
-                onClick={getExam}
+                onClick={refresh}
               />
             </Grid>
             <Grid item>
@@ -301,8 +354,9 @@ const Dashboard = props => {
                           <Conditional
                             condition={
                               exam.activity.num_code === 1 
-                              && user.status !== 1
+                              && user.status !== 2
                               && user.roles.map(r=>(r.id)).includes(exam.participant_role)
+                              && !finishedExams.includes(exam.id)
                             }
                           >
                             <Button
@@ -342,11 +396,27 @@ const Dashboard = props => {
             <MenuItem key="reset" onClick={() => changeExamActivity(0)}>
               Reset
             </MenuItem>
+            <MenuItem key="reset" onClick={() => handleopenMonitoring()}>
+              Monitor
+            </MenuItem>
           </Menu>
         </Grid>
       </Grid>
     </Grid>
+
+    <Dialog fullScreen open={openMonitoring} onClose={handleCloseMonitoring} TransitionComponent={Transition}>
+      <ExamMonitoring 
+      exam={exam}
+      user={user}
+      handleClose={handleCloseMonitoring}/>
+    </Dialog>
+    </>
   );
 };
+
+const Transition = React.forwardRef(function Transition(props, ref) {
+  return <Slide direction="up" ref={ref} {...props} />;
+});
+
 
 export default withRouter(Dashboard);

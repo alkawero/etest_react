@@ -24,6 +24,7 @@ import { useSelector } from "react-redux";
 const LogPage = (props) => {
     
     const ui = useSelector(state => state.ui);
+    const user = useSelector(state => state.user);  
     const [filterAnchor, setFilterAnchor] = useState(null)
     const [filterParams, setFilterParams] = useState({})
     
@@ -44,6 +45,11 @@ const LogPage = (props) => {
     
     const classes = useStyles({dimension})
     
+    const getHeaders = ()=> {
+        return {"Authorization": user.token}    
+      }
+
+
     useEffect(() => {
         getGroups()
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -57,7 +63,8 @@ const LogPage = (props) => {
 
     const getGroups = async()=>{
         const params = {group:"log_case"}
-        const response = await doGet('param',params)        
+        
+        const response = await doGet("param", params, getHeaders());                
         const paramGroups = response.data.map(group=>({label:group.value,value:group.num_code}))
         setParamGroups(paramGroups)
         const newFilters = filters.map(filter=>{
@@ -77,7 +84,8 @@ const LogPage = (props) => {
     
     const getData = async(paramsFromFilter)=>{
         const params={pageNum:rowsPerHalaman,...paramsFromFilter}
-        const response = await doGet('log?page='+halaman,params)
+                
+        const response = await doGet('log?page='+halaman,params,getHeaders())
         if(!response.error){
             setTotalRows(response.data.meta.total)
             setData(response.data.data) 

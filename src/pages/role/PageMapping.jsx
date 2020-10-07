@@ -1,4 +1,5 @@
 import React,{useState,useEffect} from 'react';
+import { useSelector } from "react-redux";
 import Grid from '@material-ui/core/Grid'; 
 import Chip from '@material-ui/core/Chip';
 import { makeStyles } from '@material-ui/styles';
@@ -10,6 +11,7 @@ import { doGet,doPost,doDelete,doPut } from 'apis/api-service';
 
 const PageMapping = ({selectedRoleId,refresh}) => {
     const [popUpAnchor, setPopUpAnchor] = useState(null)
+    const user = useSelector(state => state.user);
     const classes = useStyles()
     const [selectedPage, setSelectedPage] = useState(null)
     const [allAccess, setAllAccess] = useState([])
@@ -18,6 +20,10 @@ const PageMapping = ({selectedRoleId,refresh}) => {
     const [refreshAvaiAccess, setRefreshAvaiAccess] = useState(0)
     const [availableAccess, setAvailableAccess] = useState(null)
 
+    const getHeaders = ()=> {
+        return {"Authorization": user.token}    
+      }
+    
     useEffect(() => {
         getAllAccess()
     },[]);
@@ -47,7 +53,8 @@ const PageMapping = ({selectedRoleId,refresh}) => {
     },[selectedPage]);
 
     const getPagesByRole = async(roleId)  =>{
-        const response = await doGet('role/'+roleId+'/pages')        
+        
+        const response = await doGet('role/'+roleId+'/pages',{},getHeaders())        
         if(!response.error){
             const pages = response.data
             setPages(pages)
@@ -66,8 +73,9 @@ const PageMapping = ({selectedRoleId,refresh}) => {
             page_id:selectedPage.id,
             role_id:selectedRoleId,
             access_code:access}
-        await doPost('role/page/access',a,'add access')         
-        setRefreshPages(refreshPages+1)
+            
+            await doPost('role/page/access',a,'add access',getHeaders())         
+            setRefreshPages(refreshPages+1)
     }
 
     const deleteAccess = async(pageId,access) =>{
@@ -81,7 +89,8 @@ const PageMapping = ({selectedRoleId,refresh}) => {
 
     const getAllAccess = async() => {
         const params={group:'access'}
-        const response = await doGet('param',params)
+        
+        const response = await doGet("param", params, getHeaders());        
         setAllAccess(response.data)
     }
     

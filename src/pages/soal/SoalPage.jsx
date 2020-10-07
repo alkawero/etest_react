@@ -48,7 +48,8 @@ const SoalPage = props => {
   };
   const getDataJenjang = async () => {
     const params = { group: "jenjang" };
-    const response = await doGet("param", params);
+    
+    const response = await doGet("param", params, getHeaders());
     setDataJenjang(
       response.data.map(j => ({ label: j.value, value: j.char_code }))
     );
@@ -62,7 +63,8 @@ const SoalPage = props => {
   const getDataGrade = async () => {
     if (filterJenjang !== null) {
       const params = { group: "grade", key: filterJenjang.value };
-      const response = await doGet("param", params);
+      
+      const response = await doGet("param", params, getHeaders());
       const grades = response.data.map(grade => ({
         label: grade.value,
         value: grade.char_code
@@ -78,7 +80,8 @@ const SoalPage = props => {
   };
   const getDataSubject = async () => {
     const params = { jenjang: filterJenjang.value, grade: filterGrade.value };
-    const response = await doGet("mapel", params);
+    
+    const response = await doGet("mapel", params,getHeaders());
     setDataSubject(
       response.data.map(data => ({ label: data.name, value: data.id }))
     );
@@ -98,6 +101,11 @@ const SoalPage = props => {
 
   const classes = useStyles({ dimension });
   const common = useCommonStyles();
+
+
+  const getHeaders = ()=> {
+    return {"Authorization": user.token}    
+  }
   
   const getSoal = async () => {
     let params = { pageNum: rowsPerHalaman, user_id:user.id };
@@ -111,7 +119,8 @@ const SoalPage = props => {
       params = { ...params, subject: filterSubject.value };
     }
 
-    const response = await doGet("soal?page=" + halaman, params);
+    
+    const response = await doGet("soal?page=" + halaman, params,getHeaders());
     if (!response.error) {
       setTotalRows(response.data.meta.total);
       setSoalData(response.data.data);
@@ -157,7 +166,8 @@ const SoalPage = props => {
   
 
   const getById = async id => {
-    const response = await doGet("soal/" + id);
+    
+    const response = await doGet("soal/" + id,{},getHeaders());
     if (!response.error) {
       return response.data;
     }
@@ -176,12 +186,13 @@ const SoalPage = props => {
   };
 
   const create = async p => {
-    await doPost("soal", p, "save soal");
+    
+    await doPost("soal", p, "save soal", getHeaders());
     setRefresh(refresh + 1);
   };
 
   const update = async p => {
-    await doPut("soal", p, "save soal");
+    await doPut("soal", p, "save soal", getHeaders());
     setRefresh(refresh + 1);
   };
 
@@ -190,7 +201,7 @@ const SoalPage = props => {
       ...s,
       active: s.active === 0 ? 1 : 0
     };
-    await doPatch("soal/toggle", newObject, "save soal");
+    await doPatch("soal/toggle", newObject, "save soal", getHeaders());
     setRefresh(refresh + 1);
   };
 
@@ -298,6 +309,7 @@ const SoalPage = props => {
                   </TableCell>
                   <TableCell>Jenjang</TableCell>
                   <TableCell>Kelas</TableCell>
+                  <TableCell>Preview</TableCell>
                   <TableCell>KD</TableCell>
                   <TableCell>Materi</TableCell>
                   <TableCell>Ranah</TableCell>
@@ -350,6 +362,7 @@ const SoalPage = props => {
                     </TableCell>
                     <TableCell>{row.jenjang}</TableCell>
                     <TableCell>{row.grade_num}</TableCell>
+                    <TableCell>{row.content}</TableCell>
                     <TableCell>{row.kds.join(",")}</TableCell>
                     <TableCell>
                       <InlineText>{row.materis.join(",")}</InlineText>
@@ -376,6 +389,7 @@ const SoalPage = props => {
                   <TableCell>Pelajaran</TableCell>
                   <TableCell>Jenjang</TableCell>
                   <TableCell>Kelas</TableCell>
+                  <TableCell>Preview</TableCell>
                   <TableCell>KD</TableCell>
                   <TableCell>Materi</TableCell>
                   <TableCell>Ranah</TableCell>

@@ -6,12 +6,15 @@ import {doGetDummy} from 'tests/api-dummy';
 import { doDelete,doGet } from 'apis/api-service';
 import DeleteButton from 'components/DeleteButton';
 
-const UserMapping = ({selectedRoleId,refresh}) => {
+const UserMapping = ({selectedRoleId,refresh, user}) => {
     const classes = useStyles()
     const [users, setUsers] = useState([])
     const [refreshUsers, setRefreshUsers] = useState(0)
     
-    
+    const getHeaders = ()=> {
+        return {"Authorization": user.token}    
+      }
+
     useEffect(() => {
         if(selectedRoleId!==0){
             getUsersByRole(selectedRoleId)            
@@ -21,7 +24,8 @@ const UserMapping = ({selectedRoleId,refresh}) => {
     
     
     const getUsersByRole = async(roleId)  =>{
-        const response = await doGet('role/'+roleId+'/users')        
+        
+        const response = await doGet('role/'+roleId+'/users',{},getHeaders())        
         
         if(!users.error){            
             setUsers(response.data)

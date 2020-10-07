@@ -1,5 +1,5 @@
 import React,{useState,useEffect} from 'react';
-import { connect } from "react-redux";
+import { useSelector } from "react-redux";
 import useStyles from './roleStyle'
 import Grid from '@material-ui/core/Grid'; 
 import Typography from '@material-ui/core/Typography'; 
@@ -24,6 +24,8 @@ import SearchListAsync from 'components/SearchListAsync';
 
 const RolePage = (props) => {
     
+    const user = useSelector(state => state.user);
+    const ui = useSelector(state => state.ui);
     const [openRightDrawer, setOpenRightDrawer] = useState(false)
     const [rightDrawerTittle, setRightDrawerTittle] = useState('')
     const [RightDrawerContent, setRightDrawerContent] = useState(null)
@@ -45,6 +47,10 @@ const RolePage = (props) => {
     
     const classes = useStyles({dimension})
     
+    const getHeaders = ()=> {
+        return {"Authorization": user.token}    
+      }
+    
     useEffect(() => {
         getRole()
     },[refresh]);
@@ -65,7 +71,8 @@ const RolePage = (props) => {
     }
     
     const getRole = async()=>{
-        const response = await doGet('role')
+        
+        const response = await doGet('role',{},getHeaders())
         if(!response.error){
             setRoleData(response.data) 
         }
@@ -73,14 +80,16 @@ const RolePage = (props) => {
     }
 
     const getRoleById = async(roleId)  =>{
-        const response = await doGet('role/'+roleId)
+        
+        const response = await doGet('role/'+roleId,{},getHeaders())
         if(!response.error){
             return response.data
         }    
     }
 
     const getPagesAvailable = async(roleId)  =>{
-        const response = await doGet('role/'+roleId+'/available')        
+        
+        const response = await doGet('role/'+roleId+'/available',{},getHeaders())
         if(!response.error){
             const pages = response.data.map(page=>{return {id:page.id,text:page.navigation}})
             setPagesAvailable(pages)
@@ -103,7 +112,8 @@ const RolePage = (props) => {
     }
 
     const create= async(p)=>{
-        await doPost('role',p,'save role') 
+        
+        await doPost('role',p,'save role', getHeaders()) 
         setRefresh(refresh+1)              
     }
 
@@ -117,7 +127,7 @@ const RolePage = (props) => {
             ...r,
             status:r.status === 0 ? 1:0
         }
-        await doPatch('role/toggle',newObject,'change status ') 
+        await doPatch('role/toggle',newObject,'change status ', getHeaders()) 
         setRefresh(refresh+1)              
     }
     
@@ -149,7 +159,9 @@ const RolePage = (props) => {
             page_id:pageId,
             role_id:selectedRoleId,
             access_code:'R'}
-        await doPost('role/page/access',a,'add access')         
+
+        
+        await doPost('role/page/access',a,'add access',getHeaders())         
         getPagesAvailable(selectedRoleId)
         setRefreshPages(refreshPages+1)
     }
@@ -158,11 +170,13 @@ const RolePage = (props) => {
         const a = {
             user_id:userP.id,
             role_id:selectedRoleId}
-        await doPost('role/user',a,'add user role')         
+
+        
+        await doPost('role/user',a,'add user role', getHeaders())         
         setRefreshUsers(refreshUsers+1)
     }
 
-    const currentAccess = props.ui.active_page.access   
+    const currentAccess = ui.active_page.access   
 
     
         
@@ -172,7 +186,7 @@ const RolePage = (props) => {
             <Grid item xs={10} sm={6} className={classes.headerTittle}>
                 <Typography variant="h6">
                     {
-                        props.ui.active_page.tittle
+                        ui.active_page.tittle
                     }
                 </Typography>
             </Grid>            
@@ -216,7 +230,7 @@ const RolePage = (props) => {
                         </Grid>    
                         <Grid item xs={8}>                            
                             <Conditional condition={selectedRoleId!==0}>
-                                <RoleDetail selectedRoleId={selectedRoleId} refreshPages={refreshPages} refreshUsers={refreshUsers} detailTab={detailTab} setDetailTab={setDetailTab}/>    
+                                <RoleDetail user={user} selectedRoleId={selectedRoleId} refreshPages={refreshPages} refreshUsers={refreshUsers} detailTab={detailTab} setDetailTab={setDetailTab}/>    
                             </Conditional>                        
                         </Grid> 
                     </Grid>
@@ -233,24 +247,14 @@ const RolePage = (props) => {
                 <SimpleSearchList data={pagesAvailable} action={addPageMapping} />            
             </Conditional>    
             <Conditional condition={detailTab===1}>
-                <SearchListAsync path={'user'} action={addUserMapping} />            
+                <SearchListAsync user={user} path={'user'} action={addUserMapping} />            
             </Conditional>
         </PopUp>
         </>
     )
 }
 
-const mapStateToProps = state => {
-    return {
-        user    : state.user,
-        ui      : state.ui
-     };
-  }
-const mapDispatchToProps = dispatch => {
-    return {      
-        
-    }
-}
 
 
-export default  connect(mapStateToProps,mapDispatchToProps)(RolePage);
+
+export default  RolePage;

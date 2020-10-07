@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import Grid from "@material-ui/core/Grid";
 import useStyles from "./reviewerStyle";
 import Button from "@material-ui/core/Button";
@@ -12,11 +13,17 @@ import { selectCustomZindex } from "themes/commonStyle";
 
 const ReviewerForm = ({ action, reviewer, create, update, onClose }) => {
   const classes = useStyles();
-  const [user, setUser] = useState(null);  
+  const [userParam, setUserParam] = useState(null);  
   const [subject, setSubject] = useState(null);
-
+  const user = useSelector(state => state.user);
+  
   const [dataJenjang, setDataJenjang] = useState([]);
   const [jenjang, setJenjang] = useState(null);
+  
+  const getHeaders = ()=> {
+    return {"Authorization": user.token}    
+  }
+
   useEffect(() => {
     getDataSubject()
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -30,7 +37,8 @@ const ReviewerForm = ({ action, reviewer, create, update, onClose }) => {
   };
   const getDataJenjang = async () => {
     const params = { group: "jenjang" };
-    const response = await doGet("param", params);
+    
+    const response = await doGet("param", params, getHeaders());
     setDataJenjang(
       response.data.map(j => ({ label: j.value, value: j.char_code }))
     );
@@ -43,7 +51,8 @@ const ReviewerForm = ({ action, reviewer, create, update, onClose }) => {
   const getDataSubject = async () => {
     if(jenjang!==null){
         const params = { jenjang: jenjang.value };
-        const response = await doGet("mapel", params);
+        
+        const response = await doGet("mapel", params, getHeaders());
         setDataSubject(
         response.data.map(data => ({ label: data.name, value: data.id }))
         );
@@ -52,7 +61,7 @@ const ReviewerForm = ({ action, reviewer, create, update, onClose }) => {
 
   useEffect(() => {
     if (reviewer) {
-      setUser({ id: reviewer.reviewer_id, text: reviewer.reviewer_name });
+      setUserParam({ id: reviewer.reviewer_id, text: reviewer.reviewer_name });
       setSubject({ label: reviewer.subject_name, value: reviewer.subject.id });
       setJenjang({ label: reviewer.jenjang, value: reviewer.jenjang });
     }
@@ -63,7 +72,7 @@ const ReviewerForm = ({ action, reviewer, create, update, onClose }) => {
   }, []);
 
   const clear = () => {
-    setUser(null);
+    setUserParam(null);
     setSubject(null);
     setJenjang(null);
   }; 
@@ -73,7 +82,7 @@ const ReviewerForm = ({ action, reviewer, create, update, onClose }) => {
     if (reviewer) {
       const newReviewer = {
         ...reviewer,
-        user_id: user.id,
+        user_id: userParam.id,
         subject_id: subject.value,
         jenjang: jenjang.value
       };
@@ -81,7 +90,7 @@ const ReviewerForm = ({ action, reviewer, create, update, onClose }) => {
       clear();
     } else {
       const reviewer = {
-        user_id: user.id,
+        user_id: userParam.id,
         subject_id: subject.value,
         jenjang: jenjang.value
       };
@@ -103,18 +112,18 @@ const ReviewerForm = ({ action, reviewer, create, update, onClose }) => {
           <Typography>reviewer :</Typography>
         </Grid>
 
-        <Conditional condition={user === null}>
-          <SearchListAsync path="user" action={setUser} placeholder="search user..."/>
+        <Conditional condition={userParam === null}>
+          <SearchListAsync user={user} path="user" action={setUserParam} placeholder="search user..."/>
         </Conditional>
-        <Conditional condition={user !== null}>
+        <Conditional condition={userParam !== null}>
           <Grid item xs={8}>
-            <Typography>{user !== null && user.text}</Typography>
+            <Typography>{userParam !== null && userParam.text}</Typography>
           </Grid>
           <Grid item xs={1}>
             <IconButton
               aria-label="settings"
               className={classes.iconButton}
-              onClick={() => setUser(null)}
+              onClick={() => setUserParam(null)}
             >
               <Close color="primary" />
             </IconButton>

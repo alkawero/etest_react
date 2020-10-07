@@ -1,6 +1,5 @@
 import React,{useState,useEffect} from 'react';
-import { connect } from "react-redux";
-import {showSnackbar} from 'reduxs/actions';
+import { useSelector } from "react-redux";
 import useStyles from './mathStyle'
 import Grid from '@material-ui/core/Grid';
 import Paper  from '@material-ui/core/Paper';
@@ -37,6 +36,8 @@ import MathDisplay from 'components/MathDisplay';
 
 const MathPage = (props) => {
     
+    const user = useSelector(state => state.user);
+    const ui = useSelector(state => state.ui);
     const [openTopDrawer, setOpenTopDrawer] = useState(false)
     const [openRightDrawer, setOpenRightDrawer] = useState(false)
     const [rightDrawerTittle, setRightDrawerTittle] = useState('')
@@ -57,6 +58,10 @@ const MathPage = (props) => {
     
     const classes = useStyles({dimension})
     
+    const getHeaders = ()=> {
+        return {"Authorization": user.token}    
+      }
+    
     useEffect(() => {
         getMath()
       },[refresh,rowsPerHalaman,halaman]);
@@ -67,7 +72,8 @@ const MathPage = (props) => {
     
     const getMath = async()=>{
         const params={pageNum:rowsPerHalaman}
-        const response = await doGet('math?page='+halaman,params)
+                
+        const response = await doGet('math?page='+halaman,params,getHeaders())
         if(!response.error){
             setTotalRows(response.data.total)
             setMathData(response.data.data) 
@@ -91,12 +97,13 @@ const MathPage = (props) => {
     }
 
     const create= async(p)=>{
-        await doPost('math',p,'save Math') 
+        
+        await doPost('math',p,'save Math', getHeaders()) 
         setRefresh(refresh+1)              
     }
 
     const update= async(p)=>{
-        await doPut('math',p,'save Math') 
+        await doPut('math',p,'save Math', getHeaders()) 
         setRefresh(refresh+1)              
     }
 
@@ -105,7 +112,7 @@ const MathPage = (props) => {
             ...p,
             status:p.status===0?1:0
         }
-        await doPatch('math/toggle',newObject,'save Math') 
+        await doPatch('math/toggle',newObject,'save Math', getHeaders()) 
         setRefresh(refresh+1)              
     }
     
@@ -139,7 +146,7 @@ const MathPage = (props) => {
         setHalaman(1);
       }
 
-    const currentAccess = props.ui.active_page.access
+    const currentAccess = ui.active_page.access
 
     return(
         <>
@@ -147,7 +154,7 @@ const MathPage = (props) => {
             <Grid item xs={10} sm={6} className={classes.headerTittle}>
                 <Typography variant="h6">
                     {
-                        props.ui.active_page.tittle
+                        ui.active_page.tittle
                     }
                 </Typography>
             </Grid>            
@@ -255,17 +262,5 @@ const MathPage = (props) => {
     )
 }
 
-const mapStateToProps = state => {
-    return {
-        user    : state.user,
-        ui      : state.ui
-     };
-  }
-const mapDispatchToProps = dispatch => {
-    return {      
-        showSnackbar: (v,t) => dispatch(showSnackbar(v,t))
-    }
-}
 
-
-export default  connect(mapStateToProps,mapDispatchToProps)(MathPage);
+export default  MathPage;

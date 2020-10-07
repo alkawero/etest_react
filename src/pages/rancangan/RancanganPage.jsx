@@ -56,6 +56,10 @@ const RancanganPage = props => {
     { value: 4, label: "Reject Reason" }
   ];
 
+  const getHeaders = ()=> {
+    return {"Authorization": user.token}    
+  }
+
   const sendNotes = async notes => {
     let to_role = null;
     let to_person = selectedRancangan.creator_id;
@@ -70,7 +74,8 @@ const RancanganPage = props => {
       status: 0
     };
 
-    await doPost("note", params, "note saved");
+    
+    await doPost("note", params, "note saved", getHeaders());
 
     if (notesType === 3) {
       revision(notes);
@@ -94,7 +99,8 @@ const RancanganPage = props => {
   };
   const getDataJenjang = async () => {
     const params = { group: "jenjang" };
-    const response = await doGet("param", params);
+    
+    const response = await doGet("param", params, getHeaders());
     setDataJenjang(
       response.data.map(j => ({ label: j.value, value: j.char_code }))
     );
@@ -108,7 +114,8 @@ const RancanganPage = props => {
   const getDataGrade = async () => {
     if (filterJenjang !== null) {
       const params = { group: "grade", key: filterJenjang.value };
-      const response = await doGet("param", params);
+      
+      const response = await doGet("param", params, getHeaders());
       const grades = response.data.map(grade => ({
         label: grade.value,
         value: grade.char_code
@@ -124,7 +131,8 @@ const RancanganPage = props => {
   };
   const getDataSubject = async () => {
     const params = { jenjang: filterJenjang.value, grade: filterGrade.value };
-    const response = await doGet("mapel", params);
+    
+    const response = await doGet("mapel", params, getHeaders());
     setDataSubject(
       response.data.map(data => ({ label: data.name, value: data.id }))
     );
@@ -186,8 +194,8 @@ const RancanganPage = props => {
     if (filterSubject !== null) {
       params = { ...params, subject: filterSubject.value };
     }
-
-    const response = await doGet("rancangan?page=" + halaman, params);
+    
+    const response = await doGet("rancangan?page=" + halaman, params, getHeaders());
     if (!response.error) {
       setTotalRows(response.data.meta.total);
       setRancanganData(response.data.data);
@@ -195,7 +203,8 @@ const RancanganPage = props => {
   };
 
   const getById = async id => {
-    const response = await doGet("rancangan/" + id);
+    
+    const response = await doGet("rancangan/" + id,{}, getHeaders());
     if (!response.error) {
       return response.data;
     }
@@ -214,12 +223,13 @@ const RancanganPage = props => {
   };
 
   const create = async p => {
-    await doPost("rancangan", p, "save rancangan");
+    
+    await doPost("rancangan", p, "save rancangan", getHeaders());
     setRefresh(refresh + 1);
   };
 
   const update = async p => {
-    await doPut("rancangan", p, "save rancangan");
+    await doPut("rancangan", p, "save rancangan", getHeaders());
     setRefresh(refresh + 1);
   };
 
@@ -279,13 +289,14 @@ const RancanganPage = props => {
 
   const sendToReviewer = async id => {
     const params = { sender: user.id, id: id, status: 1 };
-    await doPost("rancangan/review", params, "send to reviewer");
+    
+    await doPost("rancangan/review", params, "send to reviewer", getHeaders());
     setRefresh(refresh + 1);
   };
 
   const approved = async id => {
     const params = { id: id, approve_by: user.id };
-    await doPatch("rancangan/approve", params, "verified by reviewer");
+    await doPatch("rancangan/approve", params, "verified by reviewer", getHeaders());
     setRefresh(refresh + 1);
   };
 
@@ -295,7 +306,7 @@ const RancanganPage = props => {
       reject_by: user.id,
       notes: notes
     };
-    await doPatch("rancangan/reject", params, "rejected by reviewer");
+    await doPatch("rancangan/reject", params, "rejected by reviewer", getHeaders());
     setRefresh(refresh + 1);
   };
 
@@ -305,7 +316,7 @@ const RancanganPage = props => {
       revise_by: user.id,
       notes: notes
     };
-    await doPatch("rancangan/revise", params, "need for revision");
+    await doPatch("rancangan/revise", params, "need for revision", getHeaders());
     setRefresh(refresh + 1);
   };
 

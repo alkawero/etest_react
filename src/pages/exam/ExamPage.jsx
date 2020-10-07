@@ -51,15 +51,30 @@ const ExamPage = props => {
 
   const minutes = 60;
 
+  const getHeaders = ()=> {
+    return {"Authorization": user.token}    
+  }
+  
   useEffect(() => {    
     EchoInstance.channel('exam')
     .listen('ExamActivity', (e) => {      
-      if(e!==1){
+      if(Number(e.message)!==1){
         if(exam.exam_data){
-          ForcedFinish()
+          ForcedFinishSystem()
         }
-      }      
+      }            
+      
+    })
+    .listen('ResetParticipant', (e) => {      
+      if(e.message===user.id){
+          ForcedFinishSystem()        
+      } 
+      
     });
+
+    return function cleanup() {
+      EchoInstance.leaveChannel('exam');
+    }
         
   },[exam]);
 
@@ -125,9 +140,14 @@ const ExamPage = props => {
   const ForcedFinish = () => {    
     const params ={
       exam_id:exam.exam_data.id,
-      exam_account_num:user.name
+      nomor_induk:user.id
     }
     dispatch(finishExam(params))
+    setOpenModal(false);
+    props.history.push("/");
+  };
+
+  const ForcedFinishSystem = () => {        
     setOpenModal(false);
     props.history.push("/");
   };

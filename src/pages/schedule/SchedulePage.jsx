@@ -78,7 +78,8 @@ const SchedulePage = props => {
   };
   const getDataJenjang = async () => {
     const params = { group: "jenjang" };
-    const response = await doGet("param", params);
+    
+    const response = await doGet("param", params, getHeaders());
     setDataJenjang(
       response.data.map(j => ({ label: j.value, value: j.char_code }))
     );
@@ -92,7 +93,8 @@ const SchedulePage = props => {
   const getDataGrade = async () => {
     if (filterJenjang !== null) {
       const params = { group: "grade", key: filterJenjang.value };
-      const response = await doGet("param", params);
+      
+      const response = await doGet("param", params, getHeaders());
       const grades = response.data.map(grade => ({
         label: grade.value,
         value: grade.char_code
@@ -108,7 +110,8 @@ const SchedulePage = props => {
   };
   const getDataSubject = async () => {
     const params = { jenjang: filterJenjang.value, grade: filterGrade.value };
-    const response = await doGet("mapel", params);
+    
+    const response = await doGet("mapel", params, getHeaders());
     setDataSubject(
       response.data.map(data => ({ label: data.name, value: data.id }))
     );
@@ -128,6 +131,12 @@ const SchedulePage = props => {
 
   const classes = useStyles({ dimension });
   const common = useCommonStyles();
+
+
+  const getHeaders = ()=> {
+    return {"Authorization": user.token}    
+  }
+
   useEffect(() => {
     getDataJenjang();
   }, []);
@@ -180,7 +189,8 @@ const SchedulePage = props => {
       params = { ...params, subject: filterSubject.value };
     }
 
-    const response = await doGet("exam?page=" + halaman, params);
+    
+    const response = await doGet("exam?page=" + halaman, params, getHeaders());
     if (!response.error) {
       setTotalRows(response.data.meta.total);
       setExamData(response.data.data);
@@ -192,7 +202,8 @@ const SchedulePage = props => {
   }, [refresh, rowsPerHalaman, halaman]);
 
   const getById = async id => {
-    const response = await doGet("exam/" + id);
+    
+    const response = await doGet("exam/" + id,{},getHeaders());
     if (!response.error) {
       return response.data;
     }
@@ -211,7 +222,8 @@ const SchedulePage = props => {
   };
 
   const create = async p => {
-    await doPost("exam", p, "save exam");
+    
+    await doPost("exam", p, "save exam", getHeaders(), getHeaders(), getHeaders());
     setRefresh(refresh + 1);
   };
 
@@ -225,7 +237,7 @@ const SchedulePage = props => {
       ...s,
       status: s.status === 0 ? 1 : 0
     };
-    await doPatch("exam/toggle", newObject, "save exam");
+    await doPatch("exam/toggle", newObject, "save exam", getHeaders());
     setRefresh(refresh + 1);
   };
 

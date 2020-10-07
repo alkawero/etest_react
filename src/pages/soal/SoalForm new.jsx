@@ -55,6 +55,10 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
     mathjaxPlugin,
   ]
 
+  const getHeaders = ()=> {
+    return {"Authorization": user.token}    
+  }
+
   const [errorState, setErrorState] = useState({});
   const [plainContent, setPlainContent] = useState("");
   const plainContentChange = e => {
@@ -157,7 +161,8 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
   };
   const getDataSubject = async () => {
     const params  = { jenjang: jenjang.value, grade: grade.value };
-    const response = await doGet("mapel", params);
+    
+    const response = await doGet("mapel", params, getHeaders());
     setDataSubject(
       response.data.map(data => ({ label: data.name, value: data.id }))
     );
@@ -174,8 +179,8 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
       subject: subject.value,
       ki: 3
     };
-
-    const response = await doGet("kd", params);
+    
+    const response = await doGet("kd", params,getHeaders());
     if (response.data) {
       setDataKd(
         response.data.map(data => ({
@@ -196,7 +201,8 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
       selection: 1,
       kd_ids: kd_ids
     };
-    const response = await doGet("kd/ranah", params);
+    
+    const response = await doGet("kd/ranah", params,getHeaders());
     setDataRanah(
       response.data.map(data => ({
         id: data.ranah_id,
@@ -219,7 +225,8 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
       kd_ids: kd_ids,
       ranah_codes: ranah_codes
     };
-    const response = await doGet("kd/indicator", params);
+    
+    const response = await doGet("kd/indicator", params,getHeaders());
     setDataIndicator(
       response.data.map(data => ({
         id: data.trx_indi_id,
@@ -237,7 +244,9 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
   };
   const getDataLevel = async () => {
     const params = { group: "question_level" };
-    const response = await doGet("param", params);
+    
+    const response = await doGet("param", params, getHeaders());
+    
     setDataLevel(
       response.data.map(j => ({ label: j.value, value: j.num_code }))
     );
@@ -250,7 +259,8 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
   };
   const getDataJenjang = async () => {
     const params = { group: "jenjang" };
-    const response = await doGet("param", params);
+    
+    const response = await doGet("param", params, getHeaders());
     setDataJenjang(
       response.data.map(j => ({ label: j.value, value: j.char_code }))
     );
@@ -264,7 +274,8 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
   const getDataGrade = async () => {
     if (jenjang !== null) {
       const params = { group: "grade", key: jenjang.value };
-      const response = await doGet("param", params);
+      
+      const response = await doGet("param", params, getHeaders());
       const grades = response.data.map(grade => ({
         label: grade.value,
         value: grade.char_code
@@ -276,7 +287,8 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
   const [dataContentTypes, setDataContentTypes] = useState([]);
   const getDataContentTypes = async () => {
     const params = { group: "content_type" };
-    const response = await doGet("param", params);
+    
+    const response = await doGet("param", params, getHeaders());
     setDataContentTypes(
       response.data.map(data => ({
         id: data.num_code,

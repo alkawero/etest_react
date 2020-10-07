@@ -7,7 +7,7 @@ import Tab from '@material-ui/core/Tab';
 import PageMapping from './PageMapping';
 import UserMapping from './UserMapping';
 
-const RoleDetail = ({selectedRoleId,refreshUsers,refreshPages,detailTab,setDetailTab}) => {
+const RoleDetail = ({selectedRoleId,refreshUsers,refreshPages,detailTab,setDetailTab,user}) => {
     const classes = useStyles()
     const handleChange = (event,value)=>{
         setDetailTab(value)
@@ -25,7 +25,7 @@ const RoleDetail = ({selectedRoleId,refreshUsers,refreshPages,detailTab,setDetai
                     <PageMapping selectedRoleId={selectedRoleId} refresh={refreshPages} />
                 </Conditional>
                 <Conditional condition={detailTab===1}>
-                    <UserMapping selectedRoleId={selectedRoleId} refresh={refreshUsers} />
+                    <UserMapping user={user} selectedRoleId={selectedRoleId} refresh={refreshUsers} />
                 </Conditional>
             </Grid> 
         </Grid>

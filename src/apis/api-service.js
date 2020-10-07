@@ -2,9 +2,13 @@ import axios from 'axios'
 import store from 'reduxs/store'
 import {loading,showSnackbar} from 'reduxs/actions'
 
-let host = process.env.REACT_APP_BACKEND_MODE ==='PROD' ?  process.env.REACT_APP_API_PROD : process.env.REACT_APP_API_LOCAL
+export const wsHost = process.env.REACT_APP_BACKEND_MODE ==='PROD' ?  process.env.REACT_APP_WS_HOST_PROD : process.env.REACT_APP_WS_HOST_LOCAL
+
+export const host = process.env.REACT_APP_BACKEND_MODE ==='PROD' ?  process.env.REACT_APP_API_PROD : process.env.REACT_APP_API_LOCAL
 
 export const api_host = host+'/api/'
+
+
 
 export const doGetExternalApi = async(url) =>{
   store.dispatch(loading(true))
@@ -19,11 +23,11 @@ export const doGetExternalApi = async(url) =>{
         });
 }
 
-export const doGet = async(path,params={}) =>{
+export const doGet = async(path,params={}, headers={'Accept': '*/*'}) =>{
   store.dispatch(loading(true))
   return await axios.get(api_host+path,{
     params:params,
-    headers: {'Accept': '*/*'}
+    headers: headers
   })
       .then((rsp)=>{
         store.dispatch(loading(false))
@@ -39,12 +43,13 @@ export const doGet = async(path,params={}) =>{
 }
 
 
-export const doPost = async(path,payload,activity) =>{
+export const doPost = async(path,payload,activity,headers={}) =>{
   store.dispatch(loading(true))
   return await axios({
         method: 'post',
         url: api_host+path,
-        data: payload
+        data: payload,
+        headers: {...headers, "Content-Type": "application/json"}
       })
       .then((rsp)=>{
         store.dispatch(loading(false))
@@ -92,12 +97,13 @@ export const doUpload = async(path,payload) =>{
       })
 }
 
-export const doPut = async(path,payload,activity) =>{
+export const doPut = async(path,payload,activity,headers={}) =>{
   store.dispatch(loading(true))
   return await axios({
         method: 'put',
         url: api_host+path,
-        data: payload
+        data: payload,
+        headers: headers
       })
       .then((rsp)=>{
         store.dispatch(loading(false))
@@ -110,12 +116,13 @@ export const doPut = async(path,payload,activity) =>{
       })
 }
 
-export const doPatch = async(path,payload,activity) =>{
+export const doPatch = async(path,payload,activity,headers={}) =>{
   store.dispatch(loading(true))
   return await axios({
         method: 'patch',
         url: api_host+path,
-        data: payload
+        data: payload,
+        headers: headers
       })
       .then((rsp)=>{
         store.dispatch(loading(false))
@@ -128,12 +135,13 @@ export const doPatch = async(path,payload,activity) =>{
       })
 }
 
-export const doDelete = async(path,payload,activity) =>{
+export const doDelete = async(path,payload,activity,headers={}) =>{
   store.dispatch(loading(true))
   return await axios({
         method: 'delete',
         url: api_host+path,
-        data: payload
+        data: payload,
+        headers: headers
       })
       .then((rsp)=>{
         store.dispatch(loading(false))

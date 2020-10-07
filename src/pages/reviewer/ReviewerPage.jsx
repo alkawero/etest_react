@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useUpdateEffect } from "react-use";
-import { connect } from "react-redux";
-import { showSnackbar } from "reduxs/actions";
+import { useSelector } from "react-redux";
 import useStyles from "./reviewerStyle";
 import { selectCustomSize } from "themes/commonStyle";
 import Grid from "@material-ui/core/Grid";
@@ -35,6 +34,8 @@ import ReviewerForm from "./ReviewerForm";
 import Close from "@material-ui/icons/Close";
 
 const ReviewerPage = props => {
+  const user = useSelector(state => state.user);
+  const ui = useSelector(state => state.ui);
   const [openRightDrawer, setOpenRightDrawer] = useState(false);
   const [rightDrawerTittle, setRightDrawerTittle] = useState("");
   const [RightDrawerContent, setRightDrawerContent] = useState(null);
@@ -49,7 +50,8 @@ const ReviewerPage = props => {
   };
   const getDataJenjang = async () => {
     let params = { group: "jenjang" };
-    const response = await doGet("param", params);
+    
+    const response = await doGet("param", params, getHeaders());
     setDataJenjang(
       response.data.map(j => ({ label: j.value, value: j.char_code }))
     );
@@ -63,7 +65,8 @@ const ReviewerPage = props => {
   const getDataGrade = async () => {
     if (filterJenjang !== null) {
       const params = { group: "grade", key: filterJenjang.value };
-      const response = await doGet("param", params);
+      
+      const response = await doGet("param", params, getHeaders());
       const grades = response.data.map(grade => ({
         label: grade.value,
         value: grade.char_code
@@ -79,7 +82,8 @@ const ReviewerPage = props => {
   };
   const getDataSubject = async () => {
     const params = { jenjang: filterJenjang.value, grade: filterGrade.value };
-    const response = await doGet("mapel", params);
+    
+    const response = await doGet("mapel", params, getHeaders());
     setDataSubject(
       response.data.map(data => ({ label: data.name, value: data.id }))
     );
@@ -97,6 +101,10 @@ const ReviewerPage = props => {
 
   const classes = useStyles({ dimension });
 
+  const getHeaders = ()=> {
+    return {"Authorization": user.token}    
+  }
+  
   const refreshPage = () => {
     setRefresh(refresh + 1);
   };
@@ -113,8 +121,8 @@ const ReviewerPage = props => {
     if (filterUser !== null) {
         params = { ...params, user_id: filterUser.id };
       }
-
-    const response = await doGet("subject/reviewer?page=" + halaman, params);
+    
+    const response = await doGet("subject/reviewer?page=" + halaman, params, getHeaders());
     if (!response.error) {
       setTotalRows(response.data.meta.total);
       setReviewerData(response.data.data);
@@ -160,12 +168,13 @@ const ReviewerPage = props => {
   };
 
   const create = async p => {
-    await doPost("subject/reviewer", p, "save Reviewer");
+    
+    await doPost("subject/reviewer", p, "save Reviewer", getHeaders());
     setRefresh(refresh + 1);
   };
 
   const update = async p => {
-    await doPut("subject/reviewer", p, "save Reviewer");
+    await doPut("subject/reviewer", p, "save Reviewer", getHeaders());
     setRefresh(refresh + 1);
   };
 
@@ -221,7 +230,7 @@ const ReviewerPage = props => {
     getReviewer();
   };
 
-  const currentAccess = props.ui.active_page.access;
+  const currentAccess = ui.active_page.access;
 
   return (
     <>
@@ -232,7 +241,7 @@ const ReviewerPage = props => {
         className={classes.header}
       >
         <Grid item xs={10} sm={6} className={classes.headerTittle}>
-          <Typography variant="h6">{props.ui.active_page.tittle}</Typography>
+          <Typography variant="h6">{ui.active_page.tittle}</Typography>
         </Grid>
         <Grid
           container
@@ -385,7 +394,7 @@ const ReviewerPage = props => {
             </Grid>
             <Grid item>
               <Conditional condition={filterUser === null}>
-                <SearchListAsync path="user" action={setFilterUser} placeholder="filter user..." />
+                <SearchListAsync user={user} path="user" action={setFilterUser} placeholder="filter user..." />
               </Conditional>
               <Conditional condition={filterUser !== null}>
                 <Grid item container wrap="nowrap" alignItems="center">
@@ -420,16 +429,5 @@ const ReviewerPage = props => {
   );
 };
 
-const mapStateToProps = state => {
-  return {
-    user: state.user,
-    ui: state.ui
-  };
-};
-const mapDispatchToProps = dispatch => {
-  return {
-    showSnackbar: (v, t) => dispatch(showSnackbar(v, t))
-  };
-};
 
-export default connect(mapStateToProps, mapDispatchToProps)(ReviewerPage);
+export default ReviewerPage;

@@ -7,12 +7,13 @@ import store from 'reduxs/store';
 import AppSkeleton from 'components/AppSkeleton';
 import Echo from "laravel-echo"
 import Pusher from 'pusher-js';
+import {wsHost} from 'apis/api-service';
 
 export const EchoInstance = new Echo({
   authEndpoint : 'http://localhost/etest/public/broadcasting/auth',
   broadcaster: 'pusher',
   key: '1111111111',
-  wsHost: 'localhost',
+  wsHost: wsHost,
   wsPort: 6001,
   forceTLS: false,
   disableStats: true,

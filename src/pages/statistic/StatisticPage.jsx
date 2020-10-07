@@ -1,7 +1,7 @@
 import React from "react";
-import { connect } from "react-redux";
 import clsx from "clsx";
-import { showSnackbar } from "reduxs/actions";
+import { useSelector } from "react-redux";
+
 import useStyles from "./statisticStyle";
 import { useCommonStyles } from "themes/commonStyle";
 import Tabs from "@material-ui/core/Tabs";
@@ -10,10 +10,13 @@ import Typography from "@material-ui/core/Typography";
 import Box from "@material-ui/core/Box";
 import Grid from "@material-ui/core/Grid";
 
+
 const StatisticPage = props => {
   const classes = useStyles();
   const common = useCommonStyles();
   const [value, setValue] = React.useState(0);
+  const user = useSelector(state => state.user);
+  const ui = useSelector(state => state.ui);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -64,17 +67,6 @@ const StatisticPage = props => {
   );
 };
 
-const mapStateToProps = state => {
-  return {
-    user: state.user,
-    ui: state.ui
-  };
-};
-const mapDispatchToProps = dispatch => {
-  return {
-    showSnackbar: (v, t) => dispatch(showSnackbar(v, t))
-  };
-};
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -100,4 +92,4 @@ function a11yProps(index) {
   };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(StatisticPage);
+export default StatisticPage;

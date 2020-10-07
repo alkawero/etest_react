@@ -76,6 +76,11 @@ const RancanganForm = ({
     { value: 3, label: "Revision Reason" },
     { value: 4, label: "Reject Reason" }
   ];
+  
+  const getHeaders = ()=> {
+    return {"Authorization": user.token}    
+  }
+  
   const notesTypeChange = event => {
     setNotesType(event.target.value);
   };
@@ -97,7 +102,8 @@ const RancanganForm = ({
       note_type_codes: notesTypeOption.map(note => note.value)
     };
 
-    const response = await doGet("note", params);
+    
+    const response = await doGet("note", params,getHeaders());
     setNotesData(response.data);
   };
 
@@ -125,7 +131,8 @@ const RancanganForm = ({
     }
 
     if(params.subject && soalData.length===0){
-      const response = await doGet("soal", params);
+          
+      const response = await doGet("soal", params,getHeaders());
       if (!response.error) {
         const selectedIds = selectedSoal.map(soal => soal.id);
         const availableData = response.data.filter(
@@ -204,7 +211,8 @@ const RancanganForm = ({
   const [dataQuotaComposition, setDataQuotaComposition] = useState([]);
   const getDataQuotaComposition = async () => {
     const params = { group: "quota_composition" };
-    const response = await doGet("param", params);
+    
+    const response = await doGet("param", params, getHeaders());
     setDataQuotaComposition(
       response.data.map(j => ({ label: j.value, value: j.char_code }))
     );
@@ -326,7 +334,8 @@ const RancanganForm = ({
   };
   const getDataSubject = async () => {
     const params = { jenjang: jenjang.value, grade: grade.value };
-    const response = await doGet("mapel", params);
+    
+    const response = await doGet("mapel", params, getHeaders());
     setDataSubject(
       response.data.map(data => ({ label: data.name, value: data.id }))
     );
@@ -339,7 +348,8 @@ const RancanganForm = ({
   };
   const getDataExamType = async () => {
     const params = { group: "exam_type" };
-    const response = await doGet("param", params);
+    
+    const response = await doGet("param", params, getHeaders());
     setDataExamType(
       response.data.map(j => ({ label: j.value, value: j.num_code }))
     );
@@ -353,7 +363,8 @@ const RancanganForm = ({
 
   const getDataJenjang = async () => {
     const params = { group: "jenjang" };
-    const response = await doGet("param", params);
+    
+    const response = await doGet("param", params, getHeaders());
     setDataJenjang(
       response.data.map(j => ({ label: j.value, value: j.char_code }))
     );
@@ -367,7 +378,8 @@ const RancanganForm = ({
   const getDataGrade = async () => {
     if (jenjang !== null) {
       const params = { group: "grade", key: jenjang.value };
-      const response = await doGet("param", params);
+      
+      const response = await doGet("param", params, getHeaders());
       const grades = response.data.map(grade => ({
         label: grade.value,
         value: grade.char_code
@@ -383,7 +395,8 @@ const RancanganForm = ({
   const [tahunAjaran, setTahunAjaran] = useState("");
   const getTahunAjaran = async () => {
     const params = { group: "tahun_pelajaran", status: 1, single: 1 };
-    const response = await doGet("param", params);
+    
+    const response = await doGet("param", params, getHeaders());
     setTahunAjaran(response.data.value);
   };
 
@@ -484,7 +497,8 @@ const RancanganForm = ({
   };
 
   const getById = async id => {
-    const response = await doGet("soal/" + id);
+    
+    const response = await doGet("soal/" + id, getHeaders());
     if (!response.error) {
       return response.data;
     }
@@ -563,7 +577,7 @@ const RancanganForm = ({
 
   const approved = async id => {
     const params = { id: id, approve_by: user.id };
-    await doPatch("rancangan/approve", params, "verified by reviewer");
+    await doPatch("rancangan/approve", params, "verified by reviewer", getHeaders());
     setRancanganStatus("Verified");
   };
 
@@ -574,13 +588,13 @@ const RancanganForm = ({
   };
   const rejected = async (notes) => {
     const params = { id: rancangan.id, reject_by: user.id, notes : notes };
-    await doPatch("rancangan/reject", params, "rejected by reviewer");
+    await doPatch("rancangan/reject", params, "rejected by reviewer", getHeaders());
     setRancanganStatus("Rejected");
   };
 
   const revision = async (notes) => {
     const params = { id: rancangan.id, revise_by: user.id,notes : notes };
-    await doPatch("rancangan/revise", params, "need for revision");
+    await doPatch("rancangan/revise", params, "need for revision", getHeaders());
     setRancanganStatus("Need Revision");
   };
 
@@ -611,7 +625,8 @@ const RancanganForm = ({
       status: 0
     };
 
-    await doPost("note", params, "note saved");
+    
+    await doPost("note", params, "note saved", getHeaders());
     getNotesData();
 
     if (notesType === 3) {
@@ -1118,7 +1133,7 @@ const RancanganForm = ({
       </Grid>
 
       <PopUp anchor={popUpAnchor} position="bottom">
-        <SearchListAsync path={"user"} action={addPartner} />
+        <SearchListAsync user={user} path={"user"} action={addPartner} />
       </PopUp>
 
       <BottomDrawer

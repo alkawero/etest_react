@@ -3,12 +3,8 @@ author alka@2019
 */
 import {setUserLogin,setTahunPelajaran,setExamsData,setExamStatus,setGlobalError, setExamDone} from './actions'
 import {call, put, takeEvery,takeLatest,all} from 'redux-saga/effects'
-import {doGet,doPost,doSilentPost} from 'apis/api-service'
+import {api_host, doGet,doPost,doSilentPost} from 'apis/api-service'
 import {doGetDummy} from 'tests/api-dummy'
-
-let api = process.env.REACT_APP_BACKEND_MODE ==='PROD' ?  process.env.REACT_APP_API_PROD : process.env.REACT_APP_API_LOCAL
-
-export const api_url = api+'/api/'
 
 export function* rootSaga(){
 yield all([
@@ -30,7 +26,7 @@ export function* login(action){
         if(!response.data.error){
             yield put(setGlobalError(''));
             yield put(setUserLogin(response.data));
-            yield getTahunPelajaran()
+            yield getTahunPelajaran(response.data)
         }else{
             yield put(setGlobalError(response.data.error));
         }
@@ -40,10 +36,11 @@ export function* login(action){
     }
 }
 
-export function* getTahunPelajaran(){
+export function* getTahunPelajaran(user){
     const params ={group:'tahun_pelajaran', status:1,single:'single'}
     try {
-        const response = yield doGet('param',params)
+        let header = {"Authorization": user.token}
+        const response = yield doGet("param", params, header);
         yield put(setTahunPelajaran(response.data));
     } catch (e) {
         console.log(e)

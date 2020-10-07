@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useContext } from "react";
-import { useSelector } from "react-redux";
 import { isEmpty } from "lodash";
 import Grid from "@material-ui/core/Grid";
 import { useUpdateEffect } from "react-use";
@@ -54,8 +53,7 @@ const ScheduleForm = ({ create, update, onClose, exam, action, open }) => {
   
 
   const user = useContext(UserContext);
-  const currentAccess = useSelector(state => state.ui.active_page.access);
-
+  
   const [errorState, setErrorState] = useState({});
 
   const [status, setStatus] = useState(0);
@@ -68,12 +66,17 @@ const ScheduleForm = ({ create, update, onClose, exam, action, open }) => {
   const [participantsClass, setParticipantsClass] = useState([]);
   const [participantChanged, setParticipantChanged] = useState(false);
 
+  
+  const getHeaders = ()=> {
+    return {"Authorization": user.token}    
+  }
+  
   const updateStudentParticipant = async () => {
     const params={
       exam_id:exam.id,
       classes:participantsClass.map(cls=>(cls.id))
     }
-    await doPut('exam/users',params,'update peserta')
+    await doPut('exam/users',params,'update peserta', getHeaders())
     setParticipantChanged(false)
   }
   
@@ -86,7 +89,8 @@ const ScheduleForm = ({ create, update, onClose, exam, action, open }) => {
         participantsClass.map(cls => cls.id)
         )
     };
-    const response = await doGet("kelas/many/student", params);
+    
+    const response = await doGet("kelas/many/student", params, getHeaders());
     setParticipantsUser(response.data);
   };
 
@@ -97,7 +101,8 @@ const ScheduleForm = ({ create, update, onClose, exam, action, open }) => {
       grade_num: grade.label,
       grade_char: grade.value
     };
-    const response = await doGet("kelas", params);
+    
+    const response = await doGet("kelas", params, getHeaders());
     setParticipantsClassOption(
       response.data.map(kelas => ({
         id: kelas.id,
@@ -126,7 +131,8 @@ const ScheduleForm = ({ create, update, onClose, exam, action, open }) => {
       params = { ...params, subject: subject.value };
     }
 
-    const response = await doGet("rancangan", params);
+    
+    const response = await doGet("rancangan", params, getHeaders());
     if (!response.error) {
       setRancanganSoalData(response.data);
     }
@@ -180,7 +186,8 @@ const ScheduleForm = ({ create, update, onClose, exam, action, open }) => {
   };
   const getDataSubject = async () => {
     const params = { jenjang: jenjang.value, grade: grade.value };
-    const response = await doGet("mapel", params);
+    
+    const response = await doGet("mapel", params,getHeaders());
     setDataSubject(
       response.data.map(data => ({ label: data.name, value: data.id }))
     );
@@ -193,7 +200,8 @@ const ScheduleForm = ({ create, update, onClose, exam, action, open }) => {
   };
   const getDataExamType = async () => {
     const params = { group: "exam_type" };
-    const response = await doGet("param", params);
+    
+    const response = await doGet("param", params, getHeaders());
     setDataExamType(
       response.data.map(j => ({ label: j.value, value: j.num_code }))
     );
@@ -206,7 +214,8 @@ const ScheduleForm = ({ create, update, onClose, exam, action, open }) => {
   };
   const getDataSemester = async () => {
     const params = { group: "semester", status: 1 };
-    const response = await doGet("param", params);
+    
+    const response = await doGet("param", params, getHeaders());
     setDataSemester(
       response.data.map(j => ({ label: j.desc, value: j.num_code }))
     );
@@ -219,7 +228,8 @@ const ScheduleForm = ({ create, update, onClose, exam, action, open }) => {
   };
   const getDataJenjang = async () => {
     const params = { group: "jenjang" };
-    const response = await doGet("param", params);
+    
+    const response = await doGet("param", params, getHeaders());
     setDataJenjang(
       response.data.map(j => ({ label: j.value, value: j.char_code }))
     );
@@ -238,7 +248,8 @@ const ScheduleForm = ({ create, update, onClose, exam, action, open }) => {
   const getDataGrade = async () => {
     if (jenjang !== null) {
       const params = { group: "grade", key: jenjang.value };
-      const response = await doGet("param", params);
+      
+      const response = await doGet("param", params, getHeaders());
       const grades = response.data.map(grade => ({
         label: grade.value,
         value: grade.char_code
@@ -254,7 +265,8 @@ const ScheduleForm = ({ create, update, onClose, exam, action, open }) => {
 
   const getdataParticipantRole = async () => {    
       const params = {  };
-      const response = await doGet("role/options", params);
+      
+      const response = await doGet("role/options", params, getHeaders());
       const options = response.data.map(item => ({
         label: item.name,
         value: item.id,
@@ -282,7 +294,8 @@ const ScheduleForm = ({ create, update, onClose, exam, action, open }) => {
   const [tahunAjaran, setTahunAjaran] = useState("");
   const getTahunAjaran = async () => {
     const params = { group: "tahun_pelajaran", status: 1, single: 1 };
-    const response = await doGet("param", params);
+    
+    const response = await doGet("param", params, getHeaders());
     setTahunAjaran(response.data.value);
   };
 
@@ -394,7 +407,8 @@ const ScheduleForm = ({ create, update, onClose, exam, action, open }) => {
   };
 
   const getById = async id => {
-    const response = await doGet("rancangan/" + id);
+    
+    const response = await doGet("rancangan/" + id, {},getHeaders());
     if (!response.error) {
       return response.data;
     }
@@ -832,7 +846,7 @@ const ScheduleForm = ({ create, update, onClose, exam, action, open }) => {
       </Grid>
 
       <PopUp anchor={popUpAnchor} position="bottom">
-        <SearchListAsync path={"user"} action={addPengawas} />
+        <SearchListAsync user={user} path={"user"} action={addPengawas} />
       </PopUp>
 
       <BottomDrawer
