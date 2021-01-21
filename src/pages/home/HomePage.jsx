@@ -1,10 +1,10 @@
 /*
 author alka@2019
 */
-import React,{lazy,useState} from 'react';
+import React,{lazy,useState, useEffect} from 'react';
 import { Route,Redirect,Switch } from "react-router-dom";
 import { useDispatch,useSelector } from "react-redux";
-import {hideSnackbar,setActivePage,logout} from 'reduxs/actions'
+import {infoSnackbar, hideSnackbar,setActivePage,logout} from 'reduxs/actions'
 import AlkaSnackbar from 'components/AlkaSnackbar'
 import Hidden from '@material-ui/core/Hidden';
 import Grid  from '@material-ui/core/Grid';
@@ -19,12 +19,12 @@ import MenuIcon from '@material-ui/icons/Menu';
 import Typography from '@material-ui/core/Typography';
 import LeftNavigation from './LeftNavigation';
 import {isLogged} from 'utils/Auths'
-
 import FullMenu from './FullMenu';
 import PopUp  from 'components/PopUp';
 import Button  from '@material-ui/core/Button';
 import Chip from '@material-ui/core/Chip';
 import Tooltip from '@material-ui/core/Tooltip';
+import {EchoInstance} from 'App.js'
  
 const Page =  lazy(() => import('pages/page/Page'))
 const RolePage =  lazy(() => import('pages/role/RolePage'))
@@ -38,14 +38,6 @@ const MathPage =  lazy(() => import('pages/math/MathPage'))
 const StatisticPage =  lazy(() => import('pages/statistic/StatisticPage'))
 const ResultMainPage =  lazy(() => import('pages/result/ResultMainPage'))
 const LogPage =  lazy(() => import('pages/log/LogPage'))
-
-
-
-
-
-
-
-
 
 
 
@@ -75,6 +67,33 @@ const HomePage = (props) => {
         localStorage.removeItem('pahoaUserPersist')
         dispatch(logout())
     }
+
+    useEffect(() => {
+    
+        EchoInstance.channel('setting')
+        .listen('RoleChange', (e) => {
+            dispatch(infoSnackbar("admin change the role setting"))
+            if(user){
+                const roles = user.roles.map(r=>(r.id))
+                const msg = e.message.split(":")
+                
+                if(msg[0]==='role_id'){
+                    if(roles.includes(Number(msg[1]))){
+                        doLogout()
+                    }
+                }
+                if(msg[0]=== 'user_id'){
+                    if(user.id === Number(msg[1])){
+                        doLogout()
+                    }
+                }
+            }            
+        });
+        return function cleanup() {
+          EchoInstance.leaveChannel('setting');
+        }
+            
+      },[user]);
 
     if(isLogged(user)){
         return(

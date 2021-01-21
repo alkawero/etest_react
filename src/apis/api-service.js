@@ -62,12 +62,13 @@ export const doPost = async(path,payload,activity,headers={}) =>{
       })
 }
 
-export const doSilentPost = async(path,payload) =>{
+export const doSilentPost = async(path,payload,headers={}) =>{
   store.dispatch(loading(true))
   return await axios({
         method: 'post',
         url: api_host+path,
-        data: payload
+        data: payload,
+        headers: {...headers, "Content-Type": "application/json"}
       })
       .then((rsp)=>{
         store.dispatch(loading(false))
@@ -80,12 +81,12 @@ export const doSilentPost = async(path,payload) =>{
 }
 
 
-export const doUpload = async(path,payload) =>{
+export const doUpload = async(path,payload,headers={}) =>{
   return await axios({
         method: 'post',
         url: api_host+path,
         data: payload,
-        headers:{'content-type': 'multipart/form-data' }
+        headers:{...headers,'content-type': 'multipart/form-data' }
       })
       .then((rsp)=>{
         store.dispatch(showSnackbar('success','upload to server success'))

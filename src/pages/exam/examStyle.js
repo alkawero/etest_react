@@ -84,7 +84,7 @@ const useStyles = makeStyles(theme => ({
         fontWeight:'bold'     
     },
     selectedAnswerList:{
-        boxShadow: '0 0 10px 9px #9ecaed'
+        boxShadow: '0 0 10px 9px #07f1f1'
     },
     soalOptionWrapper:{
         borderTop:'1px #c4c4c4 solid ',

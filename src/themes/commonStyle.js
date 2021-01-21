@@ -74,6 +74,11 @@ export const useCommonStyles = makeStyles(theme => ({
     table_header:{
         backgroundColor:'#f5f5f5',        
     },
+    clickable:{
+        cursor:'pointer',
+        fontWeight:'bold',
+        color:theme.palette.primary.main
+    },
     
         
     

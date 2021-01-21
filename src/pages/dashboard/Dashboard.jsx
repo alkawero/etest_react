@@ -40,6 +40,9 @@ const Dashboard = props => {
   const ui = useSelector(state => state.ui);
   const [openMonitoring, setopenMonitoring] = useState(false);
 
+  
+  
+  
   const getHeaders = ()=> {
     return {"Authorization": user.token}    
   }
@@ -55,6 +58,7 @@ const Dashboard = props => {
 
   const [examData, setExamData] = useState([]);
   const [finishedExams, setfinishedExams] = useState([]);
+  const [answeringExams, setansweringExams] = useState([]);
   const [exam, setExam] = useState(null);
 
   const [filterStartDate, setFilterStartDate] = useState(startOfMonth(new Date()));
@@ -90,6 +94,19 @@ const Dashboard = props => {
     }
   }
 
+  const getAnsweringExams = async () => {//
+    let params = {
+      nomor_induk: user.id
+    };
+    
+    const response = await doGet("exam/user/answering", params,getHeaders());
+    if (!response.error) {
+      setansweringExams(response.data);
+    }
+  }
+
+  
+
   const refresh = () => {
     getExam()
     
@@ -99,7 +116,8 @@ const Dashboard = props => {
     const roles = user.roles.map(r => r.id);
     let params = {
       user_role: JSON.stringify(roles),
-      user_id: user.id
+      user_id: user.id,
+      status:1
     };
 
     if (roles.includes(1)) {
@@ -125,6 +143,7 @@ const Dashboard = props => {
       setExamData(response.data);
     }
     getFinishedExams()
+    getAnsweringExams()
   };
 
   const getExamCallback = useCallback(getExam, []);
@@ -176,9 +195,9 @@ const Dashboard = props => {
         exam_id:exam.id
       }
 
-      doSilentPost("exam/take", params);
+      doSilentPost("exam/take", params, getHeaders());
       dispatch(setActivePage(nextPage));
-      dispatch(getExamsData(exam));
+      dispatch(getExamsData({exam:exam, user:user}));
       props.history.push("/exam");
     }
   };
@@ -292,19 +311,28 @@ const Dashboard = props => {
                   <CardContent>
                     <Grid container direction="column" justify="space-between">
                       <Typography
-                        variant="h5"
-                        component="h2"
+                        variant="h6"                        
                         className={classes.title}
                         gutterBottom
                       >
-                        {exam.grade_num} {exam.jenjang}
+                        {exam.rancangan && exam.rancangan.title}
                       </Typography>
+                      
                       <Typography
                         variant="subtitle1"
                         color="textSecondary"
                         className={classes.title}
                         gutterBottom
-                      >
+                      >                        
+                        {exam.grade_num} {exam.jenjang}
+                      </Typography>
+
+                      <Typography
+                        variant="subtitle1"
+                        color="textSecondary"
+                        className={classes.title}
+                        gutterBottom
+                      >                        
                         {exam.subject_name}
                       </Typography>
                       <Typography
@@ -377,6 +405,11 @@ const Dashboard = props => {
             );
           })}
 
+          
+        </Grid>
+      </Grid>
+    </Grid>
+
           <Menu
             id="long-menu"
             anchorEl={anchorMenuExam}
@@ -396,13 +429,10 @@ const Dashboard = props => {
             <MenuItem key="reset" onClick={() => changeExamActivity(0)}>
               Reset
             </MenuItem>
-            <MenuItem key="reset" onClick={() => handleopenMonitoring()}>
+            <MenuItem key="monitor" onClick={() => handleopenMonitoring()}>
               Monitor
             </MenuItem>
           </Menu>
-        </Grid>
-      </Grid>
-    </Grid>
 
     <Dialog fullScreen open={openMonitoring} onClose={handleCloseMonitoring} TransitionComponent={Transition}>
       <ExamMonitoring 

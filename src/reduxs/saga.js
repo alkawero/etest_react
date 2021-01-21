@@ -49,14 +49,19 @@ export function* getTahunPelajaran(user){
 
 export function* getExamsData(action){
     try {
-        const response = yield doGet('exam/detail/'+action.payload.id)
+        yield put(setExamsData(null))
+        let header = {"Authorization": action.payload.user.token}
+        const response = yield doGet('exam/detail/'+action.payload.exam.id, {}, header)
         const soals = response.data.rancangan.soals
         let soal_nums = Array.from(Array(soals.length),(x,index)=> ++index);
         soal_nums.sort(() => Math.random() - 0.5);
         let i = 0;
         const randomSoals = soals.map(soal=>{
-            return {...soal,soal_num:soal_nums[i++]}}
-            )
+            return {
+                id:soal,
+                soal_num:soal_nums[i++],                
+            }
+        })
         const examData = {...response.data,soals:randomSoals}
         yield put(setExamsData(examData))
         yield put(setExamStatus('start'))
@@ -67,8 +72,9 @@ export function* getExamsData(action){
 
 export function* finishExam(action){
     try {
+        let header = {"Authorization": action.payload.user.token}
         const params = action.payload
-        const response = yield doSilentPost('exam/finish',params)
+        const response = yield doSilentPost('exam/finish',params,header)
 
         yield put(setExamDone())
     } catch (e) {

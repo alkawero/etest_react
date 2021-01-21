@@ -72,10 +72,10 @@ export default function ExamMonitoring(props) {
 
   const getStatusLabel = (status) => {
         if(status===0){
-            return "ready to take exam"
+            return "ready to take"
         }
         else if(status===1){
-            return "answering the exam"
+            return "answering"
         }
         else if(status===2){
             return "finish"

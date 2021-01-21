@@ -207,7 +207,7 @@ const ReviewerPage = props => {
   };
 
   const deleteById = async p => {
-    await doDelete("subject/reviewer", p, "delete reviewer");
+    await doDelete("subject/reviewer", p, "delete reviewer",getHeaders());
     setRefresh(refresh + 1);
   };
 
@@ -280,14 +280,16 @@ const ReviewerPage = props => {
                 <TableRow>
                   <TableCell>Jenjang</TableCell>
                   <TableCell>Subject</TableCell>
+                  <TableCell>NIK</TableCell>
                   <TableCell>Name</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {reviewerData.map(row => (
                   <TableRow key={row.id} className={classes.tableRow}>
-                    <TableCell> {row.jenjang}</TableCell>
+                    <TableCell> {row.jenjang}</TableCell>                    
                     <TableCell>{row.subject_name}</TableCell>
+                    <TableCell> {row.reviewer_id}</TableCell>
                     <TableCell>
                       <div
                         className={clsx(classes.actionWrapper, "actionWrapper")}

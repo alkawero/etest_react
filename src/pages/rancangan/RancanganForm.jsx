@@ -36,6 +36,7 @@ import EditButton from "components/EditButton";
 import CancelButton from "components/CancelButton";
 import Typography from "@material-ui/core/Typography";
 import MailButton from "components/MailButton";
+import Popover from '@material-ui/core/Popover';
 
 import Notes from "components/Notes";
 import InputText from "../../components/InputText";
@@ -60,6 +61,28 @@ const RancanganForm = ({
   const titleChange = text => {
     setTitle(text);
   };
+  const [anchorPreview, setanchorPreview] = React.useState(null);
+  const [soalPreview, setsoalPreview] = useState("");
+
+  const handlePreviewOpen = (event) => {
+    setanchorPreview(event.currentTarget);    
+  };
+
+  const handlePreviewClose = () => {
+    setanchorPreview(null);    
+  };
+
+  const previewSoal = (soalId, event) => {
+    setsoalPreview("")
+    setanchorPreview(event.currentTarget); 
+    getSoalPreview(soalId)      
+  };
+
+  const getSoalPreview = async (soalId) => {       
+    const response = await doGet("soal/preview/"+soalId, {},getHeaders());
+    setsoalPreview(response.data);
+  };
+
   const [status, setStatus] = useState(0);
   const [openTopDrawer, setOpenTopDrawer] = useState(false);
   const [topDrawerTittle, setTopDrawerTittle] = useState("");
@@ -76,6 +99,8 @@ const RancanganForm = ({
     { value: 3, label: "Revision Reason" },
     { value: 4, label: "Reject Reason" }
   ];
+
+  
   
   const getHeaders = ()=> {
     return {"Authorization": user.token}    
@@ -144,7 +169,7 @@ const RancanganForm = ({
     
   };
 
-  const [soalQuota, setSoalQuota] = useState(10);
+  const [soalQuota, setSoalQuota] = useState(0);
   const soalQuotaChange = e => {
     const value = parseInt(e.target.value);
     if ((action === "edit" || action === "create")&& isCreator()) {
@@ -152,10 +177,10 @@ const RancanganForm = ({
         setSoalQuota(value);
         setPartnerMc(0);
         setPartnerEs(0);
-        if (quotaComposition === "M") {
+        if (quotaComposition.value === "M") {
           setMcComposition(value);
           setEsComposition(0);
-        } else if (quotaComposition === "E") {
+        } else if (quotaComposition.value === "E") {
           setEsComposition(value);
           setMcComposition(0);
         } else {
@@ -168,7 +193,7 @@ const RancanganForm = ({
     }
   };
 
-  const [creatorMc, setCreatorMc] = useState(6);
+  const [creatorMc, setCreatorMc] = useState(0);
   const creatorMcChange = e => {
     const creatorMcValue = parseInt(e.target.value);
     if ((action === "edit" || action === "create") && isCreator()) {
@@ -243,7 +268,7 @@ const RancanganForm = ({
     }
   };
 
-  const [mcComposition, setMcComposition] = useState(6);
+  const [mcComposition, setMcComposition] = useState(0);
   const mcCompositionChange = e => {
     const value = parseInt(e.target.value);
     if ((action === "edit" || action === "create") && isCreator()) {
@@ -298,7 +323,7 @@ const RancanganForm = ({
     if ((action === "edit" || action === "create") && isCreator()) {
     setPartner({ id: user.id, name: user.text });
     setCollaboration("P");
-    setPopUpAnchor(null);
+    setPopUpAnchor(null);    
     }
   };
 
@@ -401,12 +426,15 @@ const RancanganForm = ({
   };
 
   useEffect(() => {
-    getTahunAjaran();
-    getDataExamType();
-    getDataJenjang();
-    getDataQuotaComposition();
-  }, []);
+    if(user){
+      getTahunAjaran();
+      getDataExamType();
+      getDataJenjang();
+      getDataQuotaComposition();
+    }
+  }, [user]);
 
+  
   useEffect(() => {
     //setting for detail/edit
     if (rancangan) {
@@ -498,7 +526,7 @@ const RancanganForm = ({
 
   const getById = async id => {
     
-    const response = await doGet("soal/" + id, getHeaders());
+    const response = await doGet("soal/" + id, {},getHeaders());
     if (!response.error) {
       return response.data;
     }
@@ -753,12 +781,12 @@ const RancanganForm = ({
   };
 
   const sumBobot = () => {
-    return selectedSoal.reduce((a, b) => a + (b["bobot"] || 0), 0);
+    return Math.round(selectedSoal.reduce((a, b) => a + (b["bobot"] || 0), 0));
   };
 
   const splitBobot = () => {
     if (action === "edit" || action === "create") {
-      const newBobot = Math.floor(100 / selectedSoal.length);
+      const newBobot = Math.round((100 / selectedSoal.length) * 100) / 100;      
       let splitted = selectedSoal.map(soal => ({ ...soal, bobot: newBobot }));
       const sorted = sortBy(splitted, soal => soal.no);
       setSelectedSoal(sorted);
@@ -1008,13 +1036,17 @@ const RancanganForm = ({
             </Grid>
           </Grid>
         </Grid>
-        <Grid container wrap="nowrap" className={common.paddingX}>
-          <Grid item container>
+        <Grid container className={common.paddingX}>
+          <Grid item xs={3} container>
             <InputText
               input={title}
               onChange={titleChange}
               readOnly={action !== "edit" && action !== "create"}
             />
+          </Grid>
+
+          <Grid item xs={2} container alignItems="center" justify="flex-end">
+            Jumlah Soal : {selectedSoal.length}
           </Grid>
           <Grid item xs={2} container alignItems="center" justify="flex-end">
             Total Bobot : {sumBobot("bobot")}
@@ -1057,8 +1089,15 @@ const RancanganForm = ({
             </TableHead>
             <TableBody>
               {selectedSoal.map(row => (
-                <TableRow key={row.id} className={classes.tableRow}>
-                  <TableCell>{row.no}</TableCell>
+                <TableRow 
+                key={row.id} 
+                className={classes.tableRow}                
+                >
+                  <TableCell
+                    onClick={(e)=>previewSoal(row.id,e)}
+                  >
+                    {row.no}
+                  </TableCell>
                   <TableCell>{row.kds && row.kds.join(",")}</TableCell>
                   <TableCell>{row.materis&&row.materis.join(",")}</TableCell>
                   <TableCell>{row.ranahs&&row.ranahs.join(",")}</TableCell>
@@ -1235,6 +1274,24 @@ const RancanganForm = ({
         onSubmit={sendNotes}
         disabled={disableNoteTypeChange}
       />
+
+      <Popover
+        id="mouse-over-popover"        
+        open={Boolean(anchorPreview)}
+        anchorEl={anchorPreview}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }}
+        transformOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+        onClose={handlePreviewClose}
+        disableRestoreFocus
+      >
+        <Typography style={{padding:8}} >{soalPreview}</Typography>
+      </Popover>
     </>
   );
 };

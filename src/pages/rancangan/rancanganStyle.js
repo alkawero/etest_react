@@ -134,9 +134,8 @@ const useStyles = makeStyles(theme => ({
     },
     table_wrapper:{
         width:'100%',
-        maxHeight:600,
-        minHeight:200,
-        overflow:'auto',      
+        overflowX:'auto',
+        overflowY:'hidden',
     },
     hoverable:{
         '&:hover':{           

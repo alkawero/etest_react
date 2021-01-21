@@ -1,7 +1,8 @@
 /*
 author alka@2019
+old
 */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useRef } from "react";
 import { doSilentPost } from "apis/api-service";
 import { finishExam} from "reduxs/actions";
 import clsx from "clsx";
@@ -48,13 +49,41 @@ const ExamPage = props => {
   const [answers, setAnswers] = useState([]);
   const [showAnswers, setShowAnswers] = useState(true);
   const [examStatus, setExamStatus] = useState(1);
+  const [finishStatus, setfinishStatus] = useState(false);
 
+  
+  
   const minutes = 60;
 
   const getHeaders = ()=> {
     return {"Authorization": user.token}    
-  }
+  } 
+
+  useEffect(() => {    
+    window.history.pushState(null, document.title, window.location.href);
+    window.addEventListener('popstate', function (event){
+      window.history.pushState(null, document.title,  window.location.href);
+    });
+    
+    props.history.goBack()
+    return () => {      
+      window.addEventListener('popstate', function (event){
+        window.history.pushState(null, document.title,  window.location.href);
+      });      
+    };
+  }, []);
+
   
+  const getSoalDetail = async (soal) => {
+    const params = {  };
+    
+    const response = await doGet("soal/"+soal.id, params, getHeaders());
+    if(response){
+      setCurrentSoal({...soal,...response.data})
+    }
+  };
+
+   
   useEffect(() => {    
     EchoInstance.channel('exam')
     .listen('ExamActivity', (e) => {      
@@ -75,10 +104,13 @@ const ExamPage = props => {
     return function cleanup() {
       EchoInstance.leaveChannel('exam');
     }
+
+    
         
   },[exam]);
 
   const [finishTime, setFinishTime] = useState(addMinutes(new Date(), minutes));
+
   const finish = timeout => {
     const incompletes = answers.filter(ans => !ans.answered);
     if (incompletes.length < 1 || timeout === true) {
@@ -86,29 +118,77 @@ const ExamPage = props => {
     }
     setOpenModal(true);
   };
+
+
+  const getAnswers = async ()=>{
+    const params={
+      exam:exam.exam_data.id,
+      user:user.id
+    }
+    
+    let answersTemp = [];
+    exam.exam_data.soals.forEach(soal => {
+      answersTemp = [...answersTemp, { id:soal.id, soal_num: soal.soal_num, text: "" }];
+    });
+    const response = await doGet("exam/answer", params, getHeaders());      
+    if(response){
+      answersTemp = answersTemp.map(temp => {
+        const savedAnswer = response.data.filter(saved=>saved.soal_id===temp.id)[0]
+        let answered=false
+        let code=null
+        let text=""
+        let ragu=null
+        if(savedAnswer){
+          answered=true
+          code = savedAnswer.answer_code
+          if(savedAnswer.answer_code || savedAnswer.answer_text){
+            answered=true
+            code = savedAnswer.answer_code
+            text = savedAnswer.answer_text
+          }else{
+            ragu=true
+          }
+                             
+        }
+        return {
+          ...temp, 
+          ...savedAnswer, 
+          answered:answered, 
+          code:code,
+          text:text,
+          ragu:ragu
+        }
+      });            
+
+      const sortedANswer = orderBy(answersTemp, ["soal_num"], ["asc"]);
+      setAnswers(sortedANswer);
+    } 
+  }
+
+
   useEffect(() => {
     if (exam.exam_data) {
       const firstSoal = exam.exam_data.soals.filter(
         soal => soal.soal_num === 1
       )[0];
       setCurrentSoal(firstSoal);
-      let answersTemp = [];
-      exam.exam_data.soals.forEach(soal => {
-        answersTemp = [...answersTemp, { soal_num: soal.soal_num, text: "" }];
-      });
-      const sortedANswer = orderBy(answersTemp, ["soal_num"], ["asc"]);
-      setAnswers(sortedANswer);
-
+      getSoalDetail(firstSoal)
+      getAnswers()
       setFinishTime(addMinutes(new Date(), exam.exam_data.duration));
       setTimer(true);
       const stopExam = () => {
         setTimer(false);
-        finish(true);
+        //finish(true);
+        ForcedFinish()
       };
       const timer = setTimeout(stopExam, exam.exam_data.duration * 60 * 1000);
       return () => clearTimeout(timer);
     }
+
+           
   }, [exam]);
+
+  
 
   useInterval(
     () => {
@@ -140,7 +220,8 @@ const ExamPage = props => {
   const ForcedFinish = () => {    
     const params ={
       exam_id:exam.exam_data.id,
-      nomor_induk:user.id
+      nomor_induk:user.id,
+      user:user
     }
     dispatch(finishExam(params))
     setOpenModal(false);
@@ -157,6 +238,7 @@ const ExamPage = props => {
       soal => soal.soal_num === answer.soal_num
     )[0];
     setCurrentSoal(nextSoal);
+    getSoalDetail(nextSoal)
   };
 
   const next = () => {
@@ -166,13 +248,16 @@ const ExamPage = props => {
       )[0];
       setCurrentSoal(nextSoal);
       setTemporaryAnswer(nextSoal);
+      getSoalDetail(nextSoal)
     } else {
       const nextSoal = exam.exam_data.soals.filter(
         soal => soal.soal_num === 1
       )[0];
       setCurrentSoal(nextSoal);
       setTemporaryAnswer(nextSoal);
+      getSoalDetail(nextSoal)      
     }
+    
   };
 
   const prev = () => {
@@ -182,12 +267,14 @@ const ExamPage = props => {
       )[0];
       setCurrentSoal(prevSoal);
       setTemporaryAnswer(prevSoal);
+      getSoalDetail(prevSoal)
     } else {
       const prevSoal = exam.exam_data.soals.filter(
         soal => soal.soal_num === exam.exam_data.soals.length
       )[0];
       setCurrentSoal(prevSoal);
       setTemporaryAnswer(prevSoal);
+      getSoalDetail(prevSoal)
     }
   };
 
@@ -220,7 +307,7 @@ const ExamPage = props => {
         answer_text: ""
       };
 
-      doSilentPost("exam/answer", params);
+      doSilentPost("exam/answer", params,getHeaders());
     }
   };
 
@@ -246,7 +333,7 @@ const ExamPage = props => {
         answer_text: ""
       };
 
-      doSilentPost("exam/answer", params);
+      doSilentPost("exam/answer", params,getHeaders());
     }
   };
 
@@ -281,13 +368,36 @@ const ExamPage = props => {
           answer_text: tmpAnswer
         };
 
-        doSilentPost("exam/answer", params);
+        doSilentPost("exam/answer", params,getHeaders());
       }
     }
   };
 
 
-  
+  /*
+  useEffect(() => {    
+    console.log(answers);
+  }, [answers]);
+  */
+
+
+  const getAnswerCode = (soalNum,userAnswers)=>{
+    if(userAnswers){
+      let useranswer = userAnswers.filter(
+        ans => ans.soal_num === soalNum
+      )
+      if(useranswer[0]){
+        return useranswer[0].code
+      }else{
+        return ""
+      }
+    }
+    else{
+      return ""
+    }
+    
+    
+  }
 
   const answerListComponent = () => {
     if (!showAnswers) {
@@ -358,7 +468,8 @@ const ExamPage = props => {
   };
 
   return (
-    <Grid container direction="column" alignItems="stretch" className={c.root}>
+    
+    <Grid  container direction="column" alignItems="stretch" className={c.root}>
       <Grid container alignItems="center" className={c.header} wrap="nowrap">
         <Grid container spacing={2} alignItems="center">
           <Grid item>Nomor Soal</Grid>
@@ -406,7 +517,11 @@ const ExamPage = props => {
             <Conditional
               condition={currentSoal !== null && currentSoal.content_type === 2}
             >
-              <p>{currentSoal !== null && currentSoal.content}</p>
+              {
+              currentSoal !== null &&               
+              <div dangerouslySetInnerHTML={{__html: currentSoal.content}}></div>
+              }
+              
             </Conditional>
             <Conditional
               condition={currentSoal !== null && currentSoal.content_type === 3}
@@ -426,7 +541,44 @@ const ExamPage = props => {
                 controls
               />
             </Conditional>
-          </Grid>
+
+            <Grid container >
+              <Conditional
+                condition={currentSoal !== null && currentSoal.question_type === 1}
+              >
+                {currentSoal !== null && currentSoal.question}
+              </Conditional>
+              <Conditional
+                condition={currentSoal !== null && currentSoal.question_type === 2}
+              >
+                {
+                currentSoal !== null &&               
+                <div dangerouslySetInnerHTML={{__html: currentSoal.question}}></div>
+                }
+                
+              </Conditional>
+              <Conditional
+                condition={currentSoal !== null && currentSoal.question_type === 3}
+              >
+                <MathDisplay
+                  value={currentSoal !== null && currentSoal.question}
+                />
+              </Conditional>
+
+              <Conditional
+                condition={currentSoal !== null && currentSoal.question_type === 5}
+              >
+                <ReactAudioPlayer
+                  controlsList="nodownload"
+                  style={{ flex: "1" }}
+                  src={currentSoal !== null && currentSoal.question}
+                  controls
+                />
+              </Conditional>
+
+            </Grid>
+
+          </Grid>         
 
           <Grid container className={c.soalOptionWrapper}>
             <Conditional
@@ -434,7 +586,7 @@ const ExamPage = props => {
                 currentSoal !== null && currentSoal.answer_type === "M"
               }
             >
-              {currentSoal !== null &&
+              {currentSoal !== null && currentSoal.options &&
                 currentSoal.options.map(option => (
                   <Grid
                     key={option.code}
@@ -443,10 +595,8 @@ const ExamPage = props => {
                     container
                     className={clsx(
                       c.soalOption,
-                      option.code ===
-                        answers.filter(
-                          ans => ans.soal_num === currentSoal.soal_num
-                        )[0].code && c.choosenOption
+                      option.code === getAnswerCode(currentSoal.soal_num, answers)
+                        && c.choosenOption
                     )}
                     onClick={() => answering(option)}
                   >
@@ -458,10 +608,8 @@ const ExamPage = props => {
                         alignItems="center"
                         className={clsx(
                           c.optionCode,
-                          option.code ===
-                            answers.filter(
-                              ans => ans.soal_num === currentSoal.soal_num
-                            )[0].code && c.choosenOptionCode
+                          option.code === getAnswerCode(currentSoal.soal_num, answers)
+                            && c.choosenOptionCode
                         )}
                         onClick={() => answering(option)}
                       >
@@ -597,6 +745,7 @@ const ExamPage = props => {
         </Grid>
       </Modal>
     </Grid>
+    
   );
 };
 

@@ -118,7 +118,7 @@ const RolePage = (props) => {
     }
 
     const update= async(p)=>{
-        await doPut('role',p,'save role') 
+        await doPut('role',p,'save role', getHeaders()) 
         setRefresh(refresh+1)              
     }
 
@@ -142,7 +142,7 @@ const RolePage = (props) => {
     }
     
     const deleteById=async ()=>{
-        await doDelete('role',{id:selectedRoleId},'delete role')
+        await doDelete('role',{id:selectedRoleId},'delete role', getHeaders())
         setRefresh(refresh+1)
     }
     

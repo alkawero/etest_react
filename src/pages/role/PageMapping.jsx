@@ -83,7 +83,7 @@ const PageMapping = ({selectedRoleId,refresh}) => {
             page_id:pageId,
             role_id:selectedRoleId,
             access_code:access}
-        await doDelete('role/page/access',a,'delete access')         
+        await doDelete('role/page/access',a,'delete access',getHeaders())         
         setRefreshPages(refreshPages+1)
     }
 

@@ -24,7 +24,7 @@ const answerContentTypes = [
   { id: 4, label: "image", value: 4 }
 ];
 
-const AnswerForm = ({ save, cancel, formulas }) => {
+const AnswerForm = ({ user, save, cancel, formulas }) => {
   const classes = useStyles();
   const [contentType, setContentType] = useState(null);
   const [code, setCode] = useState("");
@@ -34,6 +34,10 @@ const AnswerForm = ({ save, cancel, formulas }) => {
   const [file, setFile] = useState(null);
   const [filePath, setFilePath] = useState("");
   const [contentEditor, setContentEditor] = useState(EditorState.createEmpty());
+  
+  const getHeaders = ()=> {
+    return {"Authorization": user.token}    
+  }
   
   const contentEditorChange = contentEditor => {    
       setContentEditor(contentEditor);
@@ -54,7 +58,7 @@ const AnswerForm = ({ save, cancel, formulas }) => {
   const uploadImageCallBack = img => {
     const formData = new FormData();
     formData.append("img", img);
-    return doUpload("images/up", formData);
+    return doUpload("images/up", formData, getHeaders());
   };
 
   const onDrop = useCallback(files => {
@@ -103,7 +107,7 @@ const AnswerForm = ({ save, cancel, formulas }) => {
         } else {
           let formData = new FormData();
           formData.append("file", file);
-          url = await doUpload("option/image", formData);
+          url = await doUpload("option/image", formData, getHeaders());
           content = url.data.link;
         }
       }

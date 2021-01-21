@@ -133,7 +133,7 @@ const MathPage = (props) => {
     }
     
     const deleteById=async (p)=>{
-        await doDelete('math',p,'delete Math')
+        await doDelete('math',p,'delete Math',getHeaders())
         setRefresh(refresh+1)
     }
 

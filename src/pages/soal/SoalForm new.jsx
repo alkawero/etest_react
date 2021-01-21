@@ -483,7 +483,7 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
   const uploadImageCallBack = file => {
     const formData = new FormData();
     formData.append("img", file);
-    return doUpload("images/up", formData);
+    return doUpload("images/up", formData, getHeaders());
   };
 
   const submit = () => {

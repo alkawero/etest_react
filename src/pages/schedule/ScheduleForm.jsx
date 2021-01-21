@@ -125,7 +125,7 @@ const ScheduleForm = ({ create, update, onClose, exam, action, open }) => {
       params = { ...params, jenjang: jenjang.value };
     }
     if (grade !== null) {
-      params = { ...params, grade: grade.value };
+      params = { ...params, grade_char: grade.value };
     }
     if (subject !== null) {
       params = { ...params, subject: subject.value };
@@ -212,6 +212,7 @@ const ScheduleForm = ({ create, update, onClose, exam, action, open }) => {
   const semesterChange = e => {
     if (action === "edit" || action === "create") setSemester(e);
   };
+  
   const getDataSemester = async () => {
     const params = { group: "semester", status: 1 };
     
@@ -863,6 +864,7 @@ const ScheduleForm = ({ create, update, onClose, exam, action, open }) => {
           <Table className={classes.table}>
             <TableHead>
               <TableRow className={classes.table_header}>
+                <TableCell>Title</TableCell>
                 <TableCell className={common.borderTopLeftRadius}>
                   Ujian
                 </TableCell>
@@ -875,6 +877,7 @@ const ScheduleForm = ({ create, update, onClose, exam, action, open }) => {
             <TableBody>
               {rancanganSoalData.map(row => (
                 <TableRow key={row.id} className={classes.tableRow}>
+                  <TableCell>{row.title}</TableCell>
                   <TableCell>{row.exam_type.value}</TableCell>
                   <TableCell>{row.subject_name}</TableCell>
                   <TableCell>{row.jenjang}</TableCell>
@@ -893,6 +896,7 @@ const ScheduleForm = ({ create, update, onClose, exam, action, open }) => {
             </TableBody>
             <TableHead>
               <TableRow className={classes.table_header}>
+                <TableCell>Title</TableCell>
                 <TableCell>Ujian</TableCell>
                 <TableCell>Pelajaran</TableCell>
                 <TableCell>Jenjang</TableCell>

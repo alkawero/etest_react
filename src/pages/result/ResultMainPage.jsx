@@ -2,11 +2,7 @@ import React, { useState, useEffect,useCallback } from "react";
 import { infoSnackbar } from "reduxs/actions";
 import clsx from "clsx";
 import useStyles,{selectCustomZindex} from "./resultStyle";
-import {
-  useCommonStyles,
-  selectCustomSize,
-  selectFullSize
-} from "themes/commonStyle";
+import {useCommonStyles} from "themes/commonStyle";
 import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
 import { doGet } from "apis/api-service";
@@ -14,6 +10,7 @@ import Grid from "@material-ui/core/Grid";
 import IconButton from "@material-ui/core/IconButton";
 import Search from "@material-ui/icons/Search";
 import PopUp from "components/PopUp";
+import PlayArrow from "@material-ui/icons/PlayArrow";
 import Select from "react-select";
 import RefreshButton from "components/RefreshButton";
 import {
@@ -28,11 +25,14 @@ import {
 } from "@material-ui/pickers";
 import DateFnsUtils from "@date-io/date-fns";
 import format from "date-fns/format";
+import ResultExamPage from "./ResultExamPage";
 import ResultSiswaPage from "./ResultSiswaPage";
 import ResultKelasPage from "./ResultKelasPage";
 import ResultSekolahPage from "./ResultSekolahPage";
 import { useSelector, useDispatch } from "react-redux";
 import Conditional from "components/Conditional";
+import TopDrawer from "components/TopDrawer";
+import BottomDrawer from "components/BottomDrawer";
 
 const ResultMainPage = props => {
   const classes = useStyles();
@@ -41,13 +41,31 @@ const ResultMainPage = props => {
   const dispatch = useDispatch();
   let { url } = useRouteMatch();
   let history = useHistory();
-  const [activePath, setActivePath] = React.useState("/home/result/siswa");
-  const [filterAnchor, setFilterAnchor] = useState(null);
-  
+  const [activePath, setActivePath] = React.useState("/home/result/exam");
+  const [filterAnchor, setFilterAnchor] = useState(null);  
   const [dataParticipantRole, setdataParticipantRole] = useState([]);
+  const [openTopDrawer, setOpenTopDrawer] = useState(false);
+  const [topDrawerTittle, setTopDrawerTittle] = useState("");
+  const [topDrawerContent, setTopDrawerContent] = useState(null);
+  const [openBottomDrawer, setOpenBottomDrawer] = useState(false);
+  const [bottomDrawerTittle, setBottomDrawerTittle] = useState("");  
+  const [bottomDrawerContent, setBottomDrawerContent] = useState(null);
+  
+  const closeTopDrawer = () => {
+    setOpenTopDrawer(false);
+  };
+
+  const closeBottomDrawer = () => {
+    setOpenBottomDrawer(false);
+  };
 
   const getHeaders = ()=> {
     return {"Authorization": user.token}    
+  }
+
+  const getData = ()=> {
+    getDataByExam()
+    getexamSummary()
   }
 
   const getdataParticipantRole = async () => {    
@@ -239,8 +257,39 @@ const ResultMainPage = props => {
     setFilterAnchor(filterAnchor ? null : event.currentTarget);
   };
 
-  const [dataByNis, setDataByNis] = useState({});
+  const [dataByExam, setDataByExam] = useState([]);
+  const getDataByExam = async() => {
+    setDataByExam([]);
+    if (filterExam === null) {
+      dispatch(infoSnackbar("please choose the exam"));
+    } else {
+      let params = {
+        exam_id: filterExam.value
+      };      
+      
+      const response = await doGet("result/exam", params, getHeaders());
 
+      if (response.data) setDataByExam(response.data);
+    }
+  };
+
+  const [examSummary, setexamSummary] = useState({});
+  const getexamSummary = async() => {
+    setDataByExam([]);
+    if (filterExam === null) {
+      dispatch(infoSnackbar("please choose the exam"));
+    } else {
+      let params = {
+        exam_id: filterExam.value
+      };      
+      
+      const response = await doGet("result/exam/summary", params, getHeaders());
+
+      if (response.data) setexamSummary(response.data);
+    }
+  };
+  
+  const [dataByNis, setDataByNis] = useState({});
   const getDataByNis = async nis => {
     setDataByNis({});
     if (filterExam === null) {
@@ -249,8 +298,7 @@ const ResultMainPage = props => {
       let params = {
         exam_id: filterExam.value,
         nis: nis
-      };
-      
+      };      
       
       const response = await doGet("result/nis", params, getHeaders());
 
@@ -399,6 +447,11 @@ const ResultMainPage = props => {
             <Grid item xs={1} container justify="center" alignItems="center">
               <RefreshButton action={clear} />
             </Grid>
+            <Grid item xs={1} container justify="center" alignItems="center">
+              <IconButton onClick={getData} size="small">
+                <PlayArrow fontSize="default" />
+              </IconButton>
+            </Grid>
           
         </Grid>  
         </Conditional>
@@ -415,6 +468,7 @@ const ResultMainPage = props => {
             aria-label="simple tabs example"
             centered
           >
+            <Tab label="Ujian" value={`${url}/exam`} />
             <Tab label="Peserta" value={`${url}/siswa`} />
             <Tab label="Kelas" value={`${url}/kelas`} />            
           </Tabs>
@@ -434,7 +488,23 @@ const ResultMainPage = props => {
           <Grid item xs={12} container className={clsx(common.borderTopRadius)}>
             <Switch>
               <Route exact path="/home/result">
-                <ResultSiswaPage onGo={getDataByNis} data={dataByNis} />
+                <ResultExamPage 
+                onGo={getDataByExam} 
+                data={dataByExam} 
+                summary={examSummary}
+                setOpenTopDrawer={setOpenTopDrawer}
+                setTopDrawerTittle ={setTopDrawerTittle}
+                setTopDrawerContent={setTopDrawerContent}
+                closeTopDrawer={closeTopDrawer}
+                setOpenBottomDrawer={setOpenBottomDrawer}
+                setBottomDrawerTittle ={setBottomDrawerTittle}
+                setBottomDrawerContent={setBottomDrawerContent}
+                closeBottomDrawer={closeBottomDrawer}
+                user={user}
+                />
+              </Route>
+              <Route exact path="/home/result/exam">
+                <ResultExamPage onGo={getDataByExam} data={dataByExam} summary={examSummary}/>
               </Route>
               <Route path="/home/result/siswa">
                 <ResultSiswaPage onGo={getDataByNis} data={dataByNis} />
@@ -453,8 +523,22 @@ const ResultMainPage = props => {
           </Grid>
         </Grid>
       </Grid>
+                  
+      <TopDrawer
+        tittle={topDrawerTittle}
+        open={openTopDrawer}
+        close={closeTopDrawer}
+      >
+        {topDrawerContent}
+      </TopDrawer>
 
-   
+      <BottomDrawer
+        tittle={bottomDrawerTittle}
+        open={openBottomDrawer}
+        close={closeBottomDrawer}
+      >
+        {bottomDrawerContent}
+      </BottomDrawer>
     </>
   );
 };

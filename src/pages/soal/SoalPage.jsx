@@ -177,7 +177,7 @@ const SoalPage = props => {
     setOpenTopDrawer(true);
     setTopDrawerTittle("Buat Soal");
     setTopDrawerContent(
-      <SoalForm action="create" create={create} onClose={closeTopDrawer} />
+      <SoalForm user={user} action="create" create={create} onClose={closeTopDrawer} />
     );
   };
 
@@ -212,7 +212,7 @@ const SoalPage = props => {
   const detail = async obj => {
     const soal = await getById(obj.id);
     setTopDrawerContent(
-      <SoalForm action="detail" soal={soal} onClose={closeTopDrawer} />
+      <SoalForm user={user} action="detail" soal={soal} onClose={closeTopDrawer} />
     );
     setOpenTopDrawer(true);
     setTopDrawerTittle("Soal Detail");
@@ -222,6 +222,7 @@ const SoalPage = props => {
     const soal = await getById(p.id);
     setTopDrawerContent(
       <SoalForm
+        user={user}
         action="edit"
         update={update}
         soal={soal}
@@ -233,7 +234,7 @@ const SoalPage = props => {
   };
 
   const deleteById = async s => {
-    await doDelete("soal", s, "delete soal");
+    await doDelete("soal", s, "delete soal", getHeaders());
     setRefresh(refresh + 1);
   };
 
@@ -403,7 +404,7 @@ const SoalPage = props => {
           </Grid>
           <Grid container justify="flex-end">
             <TablePagination
-              rowsPerPageOptions={[5, 10, 25]}
+              rowsPerPageOptions={[10, 25, 50]}
               component="div"
               count={totalRows}
               rowsPerPage={rowsPerHalaman}

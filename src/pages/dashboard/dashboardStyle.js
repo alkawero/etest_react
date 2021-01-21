@@ -11,7 +11,7 @@ const useStyles = makeStyles(theme => ({
         minWidth:200
     },
     card:{
-        width:250,        
+        width:350,        
     },
     iconButton:{
         color:'white',

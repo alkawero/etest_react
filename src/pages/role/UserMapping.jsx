@@ -37,7 +37,7 @@ const UserMapping = ({selectedRoleId,refresh, user}) => {
         const a = {
             user_id:userId,
             role_id:selectedRoleId}
-        await doDelete('role/user',a,'delete user from role')         
+        await doDelete('role/user',a,'delete user from role', getHeaders())         
         setRefreshUsers(refreshUsers+1)
     }
 

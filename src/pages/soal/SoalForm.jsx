@@ -44,12 +44,11 @@ import { Typography } from "@material-ui/core";
 import ApproveButton from "../../components/ApproveButton";
 import CancelButton from "../../components/CancelButton";
 
-const SoalForm = ({ create, update, onClose, soal, action, open }) => {
+const SoalForm = (props) => {
+  const { user, create, update, onClose, soal, action, open } = props
   const classes = useStyles();
   const common = useCommonStyles();
 
-  const user = useContext(UserContext);
-  
   const getHeaders = ()=> {
     return {"Authorization": user.token}    
   }
@@ -58,7 +57,7 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
   const uploadAudio = async () => {
     let formData = new FormData();
     formData.append("audio", audio);
-    const url = await doUpload("audios/up", formData);
+    const url = await doUpload("audios/up", formData, getHeaders());
     setContent(url.data.link);
     setAudio(null);
   };
@@ -325,16 +324,19 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
   }, [open]);
 
   useEffect(() => {
+    if(user){
     getDataJenjang();
     getDataLevel();
     getDataContentTypes();
     getDataMathFormula();
-  }, []);
+    }
+  }, [user]);
 
   useEffect(() => {
     
     if (soal) {
       setExternal(soal.external);
+
       setJenjang({
         label: soal.jenjang,
         value: soal.jenjang,
@@ -350,6 +352,7 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
         value: soal.subject_id,
         load: "first-load"
       });
+      
       setKd(
         soal.kds.map(kd => ({
           id: kd.id,
@@ -513,7 +516,7 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
   const uploadImageCallBack = img => {
     const formData = new FormData();
     formData.append("img", img);
-    return doUpload("images/up", formData);
+    return doUpload("images/up", formData, getHeaders());
   };
 
   const onDrop = useCallback(files => {
@@ -1055,12 +1058,14 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
                       />
                     </Tooltip>
                   </Grid>
-                  <Grid item xs={1} container alignItems="center">
-                    <DeleteButton
-                      tooltip="remove answer"
-                      action={() => deleteAnswer(answer)}
-                    />
-                  </Grid>
+                  <Conditional condition={action === "edit" || action === "create"}>
+                    <Grid item xs={1} container alignItems="center">
+                      <DeleteButton
+                        tooltip="remove answer"
+                        action={() => deleteAnswer(answer)}
+                      />
+                    </Grid>
+                  </Conditional>                  
                 </Grid>
               ))}
             </Grid>
@@ -1094,6 +1099,7 @@ const SoalForm = ({ create, update, onClose, soal, action, open }) => {
       </Grid>
       <PopUp anchor={answerFormAnchor} position={"top-end"}>
         <AnswerForm
+          user={user}
           save={addAnswers}
           cancel={() => {
             setAnswerFormAnchor(null);

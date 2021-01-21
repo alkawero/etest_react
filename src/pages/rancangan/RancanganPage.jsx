@@ -153,13 +153,17 @@ const RancanganPage = props => {
   const classes = useStyles({ dimension });
   const common = useCommonStyles();
   useEffect(() => {
-    getDataJenjang();
-  }, []);
+    if(user){
+      getDataJenjang();
+    }    
+  }, [user]);
 
   useEffect(() => {
+    if(user){
     getRancangan();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [refresh, rowsPerHalaman, halaman]);
+  }, [user, refresh, rowsPerHalaman, halaman]);
 
   useUpdateEffect(() => {
     setFilterGrade(null);
@@ -265,7 +269,7 @@ const RancanganPage = props => {
   };
 
   const deleteById = async s => {
-    await doDelete("rancangan", s, "delete rancangan");
+    await doDelete("rancangan", s, "delete rancangan", getHeaders());
     setRefresh(refresh + 1);
   };
 
@@ -369,6 +373,7 @@ const RancanganPage = props => {
             <Table className={classes.table}>
               <TableHead>
                 <TableRow className={classes.table_header}>
+                <TableCell>Title</TableCell>
                   <TableCell className={common.borderTopLeftRadius}>
                     Exam Category
                   </TableCell>
@@ -385,7 +390,7 @@ const RancanganPage = props => {
                 {rancanganData.map(row => (
                   <TableRow key={row.id} className={classes.tableRow}>
                     <TableCell>
-                      <div
+                    <div
                         className={clsx(classes.actionWrapper, "actionWrapper")}
                       >
                         <Protected current={currentAccess} only="R">
@@ -451,8 +456,9 @@ const RancanganPage = props => {
                           </Protected>
                         </Conditional>
                       </div>
-                      {row.exam_type.char_code}
+                      {row.title}
                     </TableCell>
+                    <TableCell>{row.exam_type.char_code}</TableCell>
                     <TableCell>{row.subject_name}</TableCell>
                     <TableCell>{row.jenjang}</TableCell>
                     <TableCell>{row.grade_num}</TableCell>
@@ -463,6 +469,7 @@ const RancanganPage = props => {
               </TableBody>
               <TableHead>
                 <TableRow className={classes.table_header}>
+                  <TableCell>Title</TableCell>
                   <TableCell>Exam Category</TableCell>
                   <TableCell>Subject</TableCell>
                   <TableCell>Jenjang</TableCell>

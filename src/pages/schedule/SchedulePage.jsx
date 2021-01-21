@@ -228,7 +228,7 @@ const SchedulePage = props => {
   };
 
   const update = async p => {
-    await doPut("exam", p, "save exam");
+    await doPut("exam", p, "save exam", getHeaders());
     setRefresh(refresh + 1);
   };
 
@@ -269,7 +269,7 @@ const SchedulePage = props => {
   };
 
   const deleteById = async s => {
-    await doDelete("exam", s, "delete exam");
+    await doDelete("exam", s, "delete exam", getHeaders());
     setRefresh(refresh + 1);
   };
 

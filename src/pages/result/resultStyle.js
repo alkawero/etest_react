@@ -36,9 +36,7 @@ const useStyles = makeStyles(theme => ({
         paddingRight:20,      
         height:40
     },
-    
 
-    
     table_wrapper:{
         width:'100%',
         overflowX:'auto',
@@ -48,10 +46,16 @@ const useStyles = makeStyles(theme => ({
         minHeight:500,
         padding:8
     },
+    summaryContainer:{
+        padding:8,
+        borderRadius:6,
+        border:'1px solid black'
+    },    
     selectContainer:{
         display:'flex',
         alignItems:'center',
-    }
+    },
+    
     
     
     
